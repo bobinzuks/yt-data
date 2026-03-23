@@ -2,16 +2,26 @@ name: YouTube Extractor
 
 on:
   push:
+    paths:
+      - 'target.txt'
   workflow_dispatch:
     inputs:
       target:
-        description: 'Channel @handle or video URL'
+        description: 'Channel @handle, video URL, or search query'
         required: false
         default: '@vinnystvincent9788'
+      mode:
+        description: 'channel | video | search'
+        required: false
+        default: 'channel'
       limit:
-        description: 'Max videos'
+        description: 'Max results'
         required: false
         default: '50'
+      sort:
+        description: 'newest | oldest | popular'
+        required: false
+        default: 'popular'
 
 jobs:
   extract:
@@ -25,44 +35,50 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install deps
-        run: |
-          pip install yt-dlp scrapetube
+      - name: Install
+        run: pip install yt-dlp scrapetube
 
-      - name: Set target
-        id: params
+      - name: Run extractor
         run: |
+          # Read from inputs or target.txt
           TARGET="${{ github.event.inputs.target }}"
-          if [ -z "$TARGET" ]; then
-            TARGET=$(head -1 target.txt | tr -d '\r\n')
-          fi
-          echo "target=$TARGET" >> $GITHUB_OUTPUT
-          echo "Using target: $TARGET"
+          MODE="${{ github.event.inputs.mode }}"
+          LIMIT="${{ github.event.inputs.limit }}"
+          SORT="${{ github.event.inputs.sort }}"
 
-      - name: Extract
-        run: |
+          if [ -z "$TARGET" ]; then TARGET=$(cat target.txt); fi
+          if [ -z "$MODE" ];   then MODE="channel"; fi
+          if [ -z "$LIMIT" ];  then LIMIT="50"; fi
+          if [ -z "$SORT" ];   then SORT="popular"; fi
+
+          echo "Mode:   $MODE"
+          echo "Target: $TARGET"
+          echo "Limit:  $LIMIT"
+          echo "Sort:   $SORT"
+
           mkdir -p output
           python3 scripts/yt_extract.py \
-            channel \
-            "${{ steps.params.outputs.target }}" \
-            --limit 50 \
-            --sort popular \
+            $MODE "$TARGET" \
+            --limit $LIMIT \
+            --sort $SORT \
             --out output/result.json
 
-      - name: Preview
+      - name: Preview results
         run: |
-          python3 - << 'EOF'
+          python3 - << 'PYEOF'
           import json
           d = json.load(open("output/result.json"))
-          print(f"Got {d['count']} videos")
-          for v in d['videos'][:15]:
-              print(f"  [{v.get('duration','?'):>7}] {v.get('views','?'):>12}  {v['title']}")
-          EOF
+          items = d.get("videos") or d.get("results") or []
+          print(f"\n=== {d.get('channel_url', d.get('query',''))} ===")
+          print(f"Total: {len(items)}")
+          for v in items[:20]:
+              print(f"  [{v.get('duration','?'):>7}] {v.get('views','?'):>12}  {v.get('title','?')}")
+          PYEOF
 
       - name: Commit results
         run: |
           git config user.name  "actions-bot"
           git config user.email "actions@github.com"
           git add output/
-          git diff --staged --quiet || git commit -m "results: ${{ steps.params.outputs.target }}"
-          git push
+          git status
+          git diff --staged --quiet || git commit -m "results: ${{ github.event.inputs.target || 'push trigger' }}" && git push
