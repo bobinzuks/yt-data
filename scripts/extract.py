@@ -1,70 +1,186 @@
 #!/usr/bin/env python3
-import yt_dlp, json, os, sys
+"""
+YouTube channel extractor using InnerTube API directly.
+No yt-dlp, no scraping — uses YouTube's own internal API.
+Pure stdlib, no pip installs needed beyond requests.
+"""
+import json, os, re, sys, time
+import urllib.request, urllib.error
 
-# Read first non-empty non-comment line from target.txt
-target = None
-for line in open("target.txt"):
-    line = line.strip()
-    if line and not line.startswith("#") and not line.startswith("run-"):
-        target = line
-        break
+# ── InnerTube config ──────────────────────────────────────────────────────────
 
-if not target:
-    print("ERROR: no target in target.txt"); sys.exit(1)
+API_URL = "https://www.youtube.com/youtubei/v1/browse?prettyPrint=false"
 
-url = f"https://www.youtube.com/{target}/videos" if target.startswith("@") else target
-print(f"Extracting ALL from: {url}", flush=True)
-
-def dur(s):
-    if not s: return None
-    m,sec=divmod(int(s),60); h,m=divmod(m,60)
-    return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
-
-ydl_opts = {
-    "quiet": False,
-    "no_warnings": False,
-    "extract_flat": "in_playlist",
-    "ignoreerrors": True,
-    "http_headers": {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    },
+CONTEXT = {
+    "client": {
+        "clientName": "ANDROID",
+        "clientVersion": "19.09.37",
+        "androidSdkVersion": 30,
+        "userAgent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip",
+        "hl": "en",
+        "gl": "US",
+    }
 }
 
-info = None
-try:
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-except Exception as e:
-    print(f"ERROR extracting: {e}", flush=True)
+REQ_HEADERS = {
+    "Content-Type":             "application/json",
+    "User-Agent":               "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip",
+    "X-YouTube-Client-Name":    "3",
+    "X-YouTube-Client-Version": "19.09.37",
+    "Accept-Language":          "en-US,en;q=0.9",
+}
 
-if not info:
-    print("ERROR: yt-dlp returned no info. YouTube may be blocking this IP.", flush=True)
-    sys.exit(1)
+VIDEOS_PARAM = "EgZ2aWRlb3PyBgQKAjoA"  # encodes "videos" tab
 
-entries = [e for e in (info.get("entries") or []) if e and e.get("id")]
-channel = info.get("channel") or info.get("uploader") or target
-print(f"\nFound {len(entries)} videos | Channel: {channel}", flush=True)
+# ── helpers ───────────────────────────────────────────────────────────────────
 
-videos = []
-for e in entries:
-    videos.append({
-        "id":         e.get("id"),
-        "url":        f"https://www.youtube.com/watch?v={e.get('id')}",
-        "title":      e.get("title"),
-        "published":  e.get("upload_date") or str(e.get("timestamp",""))[:10],
-        "duration":   dur(e.get("duration")),
-        "duration_s": e.get("duration"),
-        "views":      e.get("view_count"),
-        "description": (e.get("description") or "")[:500],
-        "thumbnail":  e.get("thumbnail"),
+def post(body):
+    data = json.dumps(body).encode()
+    req = urllib.request.Request(API_URL, data=data, headers=REQ_HEADERS, method="POST")
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read())
+
+def dur_str(s):
+    if not s: return None
+    m, sec = divmod(int(s), 60); h, m = divmod(m, 60)
+    return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
+
+def get_text(obj):
+    if not obj: return ""
+    if isinstance(obj, str): return obj
+    runs = obj.get("runs") or []
+    return "".join(r.get("text","") for r in runs) or obj.get("simpleText","")
+
+def find_all(obj, key, results=None):
+    """Recursively find all values for a key in nested dicts/lists."""
+    if results is None: results = []
+    if isinstance(obj, dict):
+        if key in obj: results.append(obj[key])
+        for v in obj.values(): find_all(v, key, results)
+    elif isinstance(obj, list):
+        for item in obj: find_all(item, key, results)
+    return results
+
+def extract_videos_from_response(data):
+    """Pull video renderer objects out of any InnerTube browse response."""
+    renderers = find_all(data, "richItemRenderer") or find_all(data, "gridVideoRenderer") or []
+    # richItemRenderer wraps content
+    videos = []
+    for r in renderers:
+        vr = None
+        if "content" in r:
+            vr = r["content"].get("videoRenderer") or r["content"].get("reelItemRenderer")
+        elif "videoId" in r:
+            vr = r
+        if vr:
+            videos.append(vr)
+    # Also try direct videoRenderer search
+    if not videos:
+        videos = find_all(data, "videoRenderer")
+    return videos
+
+def parse_video(vr):
+    vid_id = vr.get("videoId","")
+    title  = get_text(vr.get("title"))
+    views_text = get_text(vr.get("viewCountText") or vr.get("shortViewCountText"))
+    published  = get_text(vr.get("publishedTimeText"))
+    dur_text   = get_text((vr.get("lengthText") or {}).get("simpleText") and vr.get("lengthText") or vr.get("lengthText"))
+    dur_txt    = get_text(vr.get("lengthText")) if vr.get("lengthText") else None
+    desc       = get_text(vr.get("descriptionSnippet"))
+    thumb      = ((vr.get("thumbnail") or {}).get("thumbnails") or [{}])[-1].get("url","")
+    return {
+        "id":        vid_id,
+        "url":       f"https://www.youtube.com/watch?v={vid_id}",
+        "title":     title,
+        "published": published,
+        "duration":  dur_txt,
+        "views":     views_text,
+        "description": desc,
+        "thumbnail": thumb,
+    }
+
+def find_continuation(data):
+    tokens = find_all(data, "token")
+    # continuation tokens are long base64-ish strings
+    for t in tokens:
+        if isinstance(t, str) and len(t) > 50:
+            return t
+    return None
+
+# ── main ──────────────────────────────────────────────────────────────────────
+
+def resolve_channel(handle):
+    """Get browseId from @handle by fetching channel page."""
+    handle = handle.lstrip("@")
+    url = f"https://www.youtube.com/@{handle}"
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
     })
-    print(f"  [{len(videos):3}] [{videos[-1]['duration'] or '?':>7}] {str(e.get('view_count') or ''):>8}  {e.get('title','')}", flush=True)
+    with urllib.request.urlopen(req, timeout=15) as r:
+        html = r.read().decode("utf-8", errors="ignore")
+    m = re.search(r'"browseId"\s*:\s*"(UC[^"]{20,})"', html)
+    if m: return m.group(1)
+    m = re.search(r'"channelId"\s*:\s*"(UC[^"]{20,})"', html)
+    if m: return m.group(1)
+    raise ValueError(f"Could not find browseId for @{handle}")
 
-os.makedirs("output", exist_ok=True)
-out = {"channel": channel, "url": url, "count": len(videos), "videos": videos}
-with open("output/result_full.json", "w") as f:
-    json.dump(out, f, indent=2, ensure_ascii=False)
+def get_all_videos(browse_id):
+    videos = []
+    page = 0
 
-total_s = sum(v.get("duration_s") or 0 for v in videos)
-h,rem=divmod(total_s,3600); m,s=divmod(rem,60)
-print(f"\nDONE: {len(videos)} videos | {h}h {m}m total runtime")
+    # Initial request
+    body = {"context": CONTEXT, "browseId": browse_id, "params": VIDEOS_PARAM}
+    data = post(body)
+    vrs = extract_videos_from_response(data)
+    for vr in vrs:
+        v = parse_video(vr)
+        if v["id"]: videos.append(v)
+    print(f"  page {page+1}: +{len(vrs)} videos (total {len(videos)})", flush=True)
+
+    # Paginate
+    while True:
+        token = find_continuation(data)
+        if not token: break
+        page += 1
+        time.sleep(0.5)
+        try:
+            body = {"context": CONTEXT, "continuation": token}
+            data = post(body)
+            vrs = extract_videos_from_response(data)
+            if not vrs: break
+            for vr in vrs:
+                v = parse_video(vr)
+                if v["id"]: videos.append(v)
+            print(f"  page {page+1}: +{len(vrs)} videos (total {len(videos)})", flush=True)
+        except Exception as e:
+            print(f"  pagination error: {e}", flush=True)
+            break
+
+    return videos
+
+
+if __name__ == "__main__":
+    target = open("target.txt").readline().strip().split()[0]
+    print(f"Target: {target}", flush=True)
+
+    print("Resolving channel...", flush=True)
+    browse_id = resolve_channel(target)
+    print(f"Browse ID: {browse_id}", flush=True)
+
+    print("Fetching all videos via InnerTube...", flush=True)
+    videos = get_all_videos(browse_id)
+
+    os.makedirs("output", exist_ok=True)
+    result = {
+        "channel": target,
+        "browse_id": browse_id,
+        "count": len(videos),
+        "videos": videos,
+    }
+    with open("output/result_full.json", "w") as f:
+        json.dump(result, f, indent=2, ensure_ascii=False)
+
+    print(f"\nDONE: {len(videos)} videos saved", flush=True)
+    for v in videos[:20]:
+        print(f"  [{v.get('duration','?'):>7}]  {v.get('views','?'):>12}  {v['title']}", flush=True)

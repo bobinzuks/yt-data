@@ -9,14 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      # Unset any proxy that might block YouTube
-      http_proxy: ""
-      https_proxy: ""
-      HTTP_PROXY: ""
-      HTTPS_PROXY: ""
-      no_proxy: "*"
-      NO_PROXY: "*"
     steps:
       - uses: actions/checkout@v4
 
@@ -24,22 +16,27 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install yt-dlp
-        run: pip install yt-dlp -q
-
-      - name: Verify internet access to YouTube
+      - name: Check YouTube connectivity
         run: |
-          curl -s -o /dev/null -w "YouTube HTTP status: %{http_code}\n" \
-            --max-time 10 \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
-            "https://www.youtube.com/@vinnystvincent9788" || echo "curl failed"
+          curl -s -o /dev/null -w "youtube.com: %{http_code}\n" "https://www.youtube.com/" || true
+          curl -s -o /dev/null -w "innertube: %{http_code}\n" -X POST "https://www.youtube.com/youtubei/v1/browse" || true
 
-      - name: Extract all videos
+      - name: Extract all videos (InnerTube API - no yt-dlp)
         run: python3 scripts/extract.py
+
+      - name: Show results
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('output/result_full.json'))
+          print(f\"Channel: {d['channel']}  |  Videos: {d['count']}\")
+          for v in d['videos'][:20]:
+              print(f\"  [{v.get('duration','?'):>7}]  {v.get('views','?'):>12}  {v['title']}\")
+          "
 
       - name: Commit results
         run: |
-          git config user.name "actions-bot"
+          git config user.name  "actions-bot"
           git config user.email "actions@github.com"
           git add output/result_full.json
-          git diff --staged --quiet || (git commit -m "results: $(python3 -c \"import json;print(json.load(open('output/result_full.json'))['count'])\")" && git push)
+          git diff --staged --quiet || (git commit -m "results: $(python3 -c \"import json;print(json.load(open('output/result_full.json'))['count'])\" ) videos" && git push)
