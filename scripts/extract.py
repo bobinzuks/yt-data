@@ -1,21 +1,49 @@
 #!/usr/bin/env python3
-import yt_dlp, json, sys, os
+import yt_dlp, json, os, sys
 
-target = open("target.txt").readline().strip().split()[0]
+# Read first non-empty non-comment line from target.txt
+target = None
+for line in open("target.txt"):
+    line = line.strip()
+    if line and not line.startswith("#") and not line.startswith("run-"):
+        target = line
+        break
+
+if not target:
+    print("ERROR: no target in target.txt"); sys.exit(1)
+
 url = f"https://www.youtube.com/{target}/videos" if target.startswith("@") else target
-print(f"Extracting ALL videos from: {url}", flush=True)
+print(f"Extracting ALL from: {url}", flush=True)
 
 def dur(s):
     if not s: return None
     m,sec=divmod(int(s),60); h,m=divmod(m,60)
     return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
 
-with yt_dlp.YoutubeDL({"quiet":False,"no_warnings":True,"extract_flat":"in_playlist","ignoreerrors":True}) as ydl:
-    info = ydl.extract_info(url, download=False)
+ydl_opts = {
+    "quiet": False,
+    "no_warnings": False,
+    "extract_flat": "in_playlist",
+    "ignoreerrors": True,
+    "http_headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    },
+}
+
+info = None
+try:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+except Exception as e:
+    print(f"ERROR extracting: {e}", flush=True)
+
+if not info:
+    print("ERROR: yt-dlp returned no info. YouTube may be blocking this IP.", flush=True)
+    sys.exit(1)
 
 entries = [e for e in (info.get("entries") or []) if e and e.get("id")]
 channel = info.get("channel") or info.get("uploader") or target
-print(f"Found {len(entries)} videos | Channel: {channel}", flush=True)
+print(f"\nFound {len(entries)} videos | Channel: {channel}", flush=True)
 
 videos = []
 for e in entries:
@@ -34,9 +62,9 @@ for e in entries:
 
 os.makedirs("output", exist_ok=True)
 out = {"channel": channel, "url": url, "count": len(videos), "videos": videos}
-with open("output/result_full.json","w") as f:
+with open("output/result_full.json", "w") as f:
     json.dump(out, f, indent=2, ensure_ascii=False)
 
 total_s = sum(v.get("duration_s") or 0 for v in videos)
 h,rem=divmod(total_s,3600); m,s=divmod(rem,60)
-print(f"\nSaved {len(videos)} videos | Total runtime: {h}h {m}m")
+print(f"\nDONE: {len(videos)} videos | {h}h {m}m total runtime")
