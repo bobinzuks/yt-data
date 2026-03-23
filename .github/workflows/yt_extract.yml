@@ -12,185 +12,80 @@ on:
         default: '@vinnystvincent9788'
 
 jobs:
-  # Job 1: get all video IDs, split into 4 chunks
-  prepare:
-    runs-on: ubuntu-latest
-    outputs:
-      chunks:  ${{ steps.split.outputs.chunks }}
-      channel: ${{ steps.split.outputs.channel }}
-      total:   ${{ steps.split.outputs.total }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install yt-dlp -q
-
-      - name: Get all video IDs and split
-        id: split
-        run: |
-          TARGET="${{ github.event.inputs.target }}"
-          if [ -z "$TARGET" ]; then TARGET=$(head -1 target.txt | tr -d '\r\n# '); fi
-          echo "Target: $TARGET"
-
-          python3 - "$TARGET" << 'PYEOF'
-          import yt_dlp, json, math, os, sys
-
-          target = sys.argv[1]
-          url = f"https://www.youtube.com/{target}/videos" if target.startswith("@") else target
-          print(f"Scanning: {url}", flush=True)
-
-          with yt_dlp.YoutubeDL({"quiet":True,"no_warnings":True,"extract_flat":"in_playlist","ignoreerrors":True}) as ydl:
-              info = ydl.extract_info(url, download=False)
-
-          entries = [e for e in (info.get("entries") or []) if e and e.get("id")]
-          channel = info.get("channel") or info.get("uploader") or target
-          total = len(entries)
-          print(f"Found {total} videos — Channel: {channel}", flush=True)
-
-          n = 4
-          chunk_size = math.ceil(total / n)
-          chunks = []
-          for i in range(n):
-              s, e2 = i * chunk_size, min((i+1) * chunk_size, total)
-              if s < total:
-                  chunks.append({"index": i, "ids": [x["id"] for x in entries[s:e2]], "start": s, "end": e2})
-
-          os.makedirs("output", exist_ok=True)
-          with open("output/all_ids.json", "w") as f:
-              json.dump({"channel": channel, "total": total, "chunks": chunks}, f)
-
-          out = os.environ["GITHUB_OUTPUT"]
-          with open(out, "a") as f:
-              f.write(f"total={total}\n")
-              f.write(f"channel={channel}\n")
-              f.write(f"chunks={json.dumps(chunks)}\n")
-          PYEOF
-
-      - name: Save ID list
-        uses: actions/upload-artifact@v4
-        with:
-          name: all-ids
-          path: output/all_ids.json
-
-  # Job 2: 4 parallel runners, each a different GitHub IP
   extract:
-    needs: prepare
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        chunk: ${{ fromJson(needs.prepare.outputs.chunks) }}
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install yt-dlp -q
-
-      - name: Extract chunk ${{ matrix.chunk.index }} (videos ${{ matrix.chunk.start }}-${{ matrix.chunk.end }})
-        run: |
-          python3 << PYEOF
-          import yt_dlp, json, os, time
-
-          ids  = ${{ toJson(matrix.chunk.ids) }}
-          idx  = ${{ matrix.chunk.index }}
-          print(f"Runner {idx}: {len(ids)} videos", flush=True)
-
-          def dur(s):
-              if not s: return None
-              m,sec=divmod(int(s),60); h,m=divmod(m,60)
-              return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
-
-          results = []
-          for i, vid_id in enumerate(ids):
-              vurl = f"https://www.youtube.com/watch?v={vid_id}"
-              try:
-                  with yt_dlp.YoutubeDL({"quiet":True,"no_warnings":True,"skip_download":True,"ignoreerrors":True}) as ydl:
-                      v = ydl.extract_info(vurl, download=False)
-                  if not v: continue
-                  results.append({
-                      "id": v.get("id"), "url": vurl,
-                      "title": v.get("title"),
-                      "published": v.get("upload_date"),
-                      "duration": dur(v.get("duration")),
-                      "duration_s": v.get("duration"),
-                      "views": v.get("view_count"),
-                      "likes": v.get("like_count"),
-                      "description": (v.get("description") or "")[:2000],
-                      "tags": v.get("tags") or [],
-                      "chapters": v.get("chapters") or [],
-                  })
-                  print(f"  [{i+1:3}/{len(ids)}] {results[-1]['duration'] or '?':>7}  {v.get('title','?')}", flush=True)
-              except Exception as ex:
-                  print(f"  [{i+1:3}] SKIP {vid_id}: {ex}", flush=True)
-              time.sleep(0.2)
-
-          os.makedirs("output", exist_ok=True)
-          out = f"output/chunk_{idx}.json"
-          with open(out, "w") as f:
-              json.dump({"chunk": idx, "count": len(results), "videos": results}, f, indent=2, ensure_ascii=False)
-          print(f"\nDone: {len(results)} videos → {out}")
-          PYEOF
-
-      - name: Upload chunk
-        uses: actions/upload-artifact@v4
-        with:
-          name: chunk-${{ matrix.chunk.index }}
-          path: output/chunk_${{ matrix.chunk.index }}.json
-
-  # Job 3: merge all chunks, commit final JSON
-  merge:
-    needs: extract
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/setup-python@v5
         with:
-          path: output
+          python-version: '3.11'
 
-      - name: Merge and commit
+      - run: pip install yt-dlp -q
+
+      - name: Extract ALL videos (no limit)
         run: |
-          python3 << 'PYEOF'
-          import json, glob, os
+          TARGET="${{ github.event.inputs.target }}"
+          if [ -z "$TARGET" ]; then TARGET=$(head -1 target.txt | tr -d '\r\n# '); fi
+          echo "Target: $TARGET"
+          mkdir -p output
 
-          chunks = sorted(glob.glob("output/chunk-*/chunk_*.json"))
-          print(f"Merging {len(chunks)} chunks...")
-          all_videos = []
-          for f in chunks:
-              d = json.load(open(f))
-              all_videos.extend(d["videos"])
-              print(f"  {os.path.basename(f)}: {d['count']} videos")
+          python3 << PYEOF
+          import yt_dlp, json, sys, os
 
-          ids_files = glob.glob("output/all-ids/all_ids.json")
-          channel = "vinny stvincent"
-          if ids_files:
-              ids_data = json.load(open(ids_files[0]))
-              channel = ids_data.get("channel", channel)
+          target = "$TARGET"
+          url = f"https://www.youtube.com/{target}/videos" if target.startswith("@") else target
+          print(f"Full extract from: {url}", flush=True)
 
-          result = {"channel": channel, "count": len(all_videos), "videos": all_videos}
+          def dur(s):
+              if not s: return None
+              m,sec=divmod(int(s),60); h,m=divmod(m,60)
+              return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
 
-          os.makedirs("output/final", exist_ok=True)
-          with open("output/final/result_full.json", "w") as f:
+          ydl_opts = {
+              "quiet": False,
+              "no_warnings": True,
+              "extract_flat": "in_playlist",
+              "ignoreerrors": True,
+              "playlistend": None,
+          }
+
+          with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+              info = ydl.extract_info(url, download=False)
+
+          entries = [e for e in (info.get("entries") or []) if e and e.get("id")]
+          channel = info.get("channel") or info.get("uploader") or target
+          print(f"\nGot {len(entries)} videos — Channel: {channel}", flush=True)
+
+          videos = []
+          for e in entries:
+              videos.append({
+                  "id":         e.get("id"),
+                  "url":        f"https://www.youtube.com/watch?v={e.get('id')}",
+                  "title":      e.get("title"),
+                  "published":  e.get("upload_date") or str(e.get("timestamp",""))[:10],
+                  "duration":   dur(e.get("duration")),
+                  "duration_s": e.get("duration"),
+                  "views":      e.get("view_count"),
+                  "description": (e.get("description") or "")[:500],
+                  "thumbnail":  e.get("thumbnail"),
+              })
+              print(f"  [{len(videos):3}] [{dur(e.get('duration')) or '?':>7}] {str(e.get('view_count') or '?'):>8} views  {e.get('title','?')}", flush=True)
+
+          result = {"channel": channel, "url": url, "count": len(videos), "videos": videos}
+          with open("output/result_full.json","w") as f:
               json.dump(result, f, indent=2, ensure_ascii=False)
 
-          total_s = sum(v.get("duration_s") or 0 for v in all_videos)
+          total_s = sum(v.get("duration_s") or 0 for v in videos)
           h,rem=divmod(total_s,3600); m,s=divmod(rem,60)
-          print(f"\n{'='*60}")
-          print(f"Channel: {channel}")
-          print(f"Total videos: {len(all_videos)}  |  Runtime: {h}h {m}m")
-          print(f"\nTop 25 by views:")
-          for v in sorted(all_videos, key=lambda x: x.get("views") or 0, reverse=True)[:25]:
-              print(f"  {v.get('views') or 0:>6}  [{v.get('duration','?'):>7}]  {v['title']}")
+          print(f"\nDONE: {len(videos)} videos | {h}h {m}m total runtime")
           PYEOF
 
-          # Commit to repo
+      - name: Commit result
+        run: |
           git config user.name  "actions-bot"
           git config user.email "actions@github.com"
-          cp output/final/result_full.json result_full.json
-          git add result_full.json
-          git diff --staged --quiet || (git commit -m "COMPLETE: full channel extract $(date +%Y-%m-%d)" && git push)
+          git add output/result_full.json
+          git diff --staged --quiet || (git commit -m "full extract: $(python3 -c \"import json;d=json.load(open('output/result_full.json'));print(d['count'])\")" && git push)
