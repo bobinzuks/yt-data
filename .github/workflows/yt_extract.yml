@@ -9,14 +9,34 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      # Unset any proxy that might block YouTube
+      http_proxy: ""
+      https_proxy: ""
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      no_proxy: "*"
+      NO_PROXY: "*"
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install yt-dlp -q
+
+      - name: Install yt-dlp
+        run: pip install yt-dlp -q
+
+      - name: Verify internet access to YouTube
+        run: |
+          curl -s -o /dev/null -w "YouTube HTTP status: %{http_code}\n" \
+            --max-time 10 \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+            "https://www.youtube.com/@vinnystvincent9788" || echo "curl failed"
+
       - name: Extract all videos
         run: python3 scripts/extract.py
+
       - name: Commit results
         run: |
           git config user.name "actions-bot"
