@@ -2,90 +2,47 @@ name: YouTube Extractor
 
 on:
   push:
-    paths:
-      - 'target.txt'
   workflow_dispatch:
     inputs:
-      mode:
-        description: 'channel | video | search'
-        required: true
-        default: 'channel'
       target:
-        description: 'Channel handle, video URL, or search query'
-        required: true
+        description: 'Channel @handle or video URL'
+        required: false
         default: '@vinnystvincent9788'
       limit:
-        description: 'Max results (blank = all)'
+        description: 'Max videos'
         required: false
-        default: '100'
-      sort:
-        description: 'newest | oldest | popular'
-        required: false
-        default: 'popular'
+        default: '50'
 
 jobs:
   extract:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install yt-dlp scrapetube
-
-      - name: Set params from push trigger
-        if: github.event_name == 'push'
+      - run: pip install yt-dlp scrapetube
+      - name: Extract
         run: |
-          MODE=$(sed -n '1p' target.txt)
-          TARGET=$(sed -n '2p' target.txt)
-          LIMIT=$(sed -n '3p' target.txt)
-          SORT=$(sed -n '4p' target.txt)
-          echo "MODE=$MODE"     >> $GITHUB_ENV
-          echo "TARGET=$TARGET" >> $GITHUB_ENV
-          echo "LIMIT=${LIMIT:-100}" >> $GITHUB_ENV
-          echo "SORT=${SORT:-popular}" >> $GITHUB_ENV
-
-      - name: Set params from dispatch trigger
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "MODE=${{ github.event.inputs.mode }}"     >> $GITHUB_ENV
-          echo "TARGET=${{ github.event.inputs.target }}" >> $GITHUB_ENV
-          echo "LIMIT=${{ github.event.inputs.limit }}"   >> $GITHUB_ENV
-          echo "SORT=${{ github.event.inputs.sort }}"     >> $GITHUB_ENV
-
-      - name: Run extractor
-        run: |
-          LIMIT_FLAG=""
-          if [ -n "$LIMIT" ]; then LIMIT_FLAG="--limit $LIMIT"; fi
-          TS=$(date +%Y%m%d_%H%M%S)
-          OUT="output/${MODE}_${TS}.json"
-          python3 scripts/yt_extract.py \
-            "$MODE" "$TARGET" \
-            $LIMIT_FLAG \
-            --sort "$SORT" \
-            --out "$OUT"
-          echo "OUTPUT_FILE=$OUT" >> $GITHUB_ENV
-          echo "--- Preview ---"
+          TARGET="${{ github.event.inputs.target }}"
+          if [ -z "$TARGET" ]; then TARGET=$(cat target.txt | head -1 | tr -d '\n'); fi
+          LIMIT="${{ github.event.inputs.limit }}"
+          if [ -z "$LIMIT" ]; then LIMIT=50; fi
+          mkdir -p output
+          python3 scripts/yt_extract.py channel "$TARGET" --limit $LIMIT --sort popular \
+            --out "output/result.json"
           python3 -c "
           import json
-          data = json.load(open('$OUT'))
-          items = data.get('videos') or data.get('results') or []
-          print(f'Total: {len(items)}')
-          for v in items[:15]:
-              print(f'  [{v.get(\"duration\",\"?\"):>7}] {v.get(\"views\",\"?\"):>12}  {v.get(\"title\",\"?\")}')
+          d = json.load(open('output/result.json'))
+          print(f\"Got {d['count']} videos\")
+          for v in d['videos'][:10]:
+              print(f\"  {v['title']}\")
           "
-
-      - name: Commit results
+      - name: Commit
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "actions-bot"
+          git config user.email "actions@github.com"
           git add output/
-          git diff --staged --quiet || git commit -m "extract: $MODE $TARGET"
-          git push
+          git diff --staged --quiet || (git commit -m "results: $(cat target.txt | head -1)" && git push)
