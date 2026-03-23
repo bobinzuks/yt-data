@@ -5,19 +5,6 @@ on:
     paths:
       - 'target.txt'
   workflow_dispatch:
-    inputs:
-      target:
-        description: 'Channel @handle, video URL, or search query'
-        required: false
-        default: '@vinnystvincent9788'
-      mode:
-        description: 'channel | video | search'
-        required: false
-        default: 'channel'
-      limit:
-        description: 'Max results (0 = all)'
-        required: false
-        default: '0'
 
 jobs:
   extract:
@@ -26,118 +13,82 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - run: pip install yt-dlp
 
-      - name: Install
-        run: pip install yt-dlp
-
-      - name: Extract ALL videos with full metadata
+      - name: Extract all videos (flat + fast)
         run: |
-          TARGET="${{ github.event.inputs.target }}"
-          if [ -z "$TARGET" ]; then TARGET=$(cat target.txt); fi
+          TARGET=$(cat target.txt | tr -d '\r\n')
           echo "Target: $TARGET"
           mkdir -p output
 
-          python3 - << 'PYEOF'
+          python3 << 'PYEOF'
 import yt_dlp, json, sys
 
-target = "$TARGET"
+target = open("target.txt").read().strip()
 if target.startswith("@"):
     url = f"https://www.youtube.com/{target}/videos"
+elif not target.startswith("http"):
+    url = f"https://www.youtube.com/@{target}/videos"
 else:
     url = target
 
-print(f"Fetching ALL videos from: {url}", flush=True)
+print(f"Extracting all videos from: {url}", flush=True)
 
-# Pass 1: flat extract to get all video IDs
-ydl_flat = {
-    "quiet": True,
+ydl_opts = {
+    "quiet": False,
     "no_warnings": True,
-    "extract_flat": True,
+    "extract_flat": "in_playlist",
     "ignoreerrors": True,
+    "extractor_args": {"youtubetab": {"skip": ["authcheck"]}},
 }
-with yt_dlp.YoutubeDL(ydl_flat) as ydl:
+
+with yt_dlp.YoutubeDL(ydl_opts) as ydl:
     info = ydl.extract_info(url, download=False)
 
 entries = info.get("entries") or []
-channel_name = info.get("channel") or info.get("uploader") or "unknown"
-print(f"Found {len(entries)} videos for channel: {channel_name}", flush=True)
+channel = info.get("channel") or info.get("uploader") or target
 
-# Pass 2: full metadata per video
-results = []
-for i, e in enumerate(entries):
-    vid_id = e.get("id")
-    if not vid_id:
+def dur(s):
+    if not s: return None
+    m, sec = divmod(int(s), 60); h, m = divmod(m, 60)
+    return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
+
+videos = []
+for e in entries:
+    if not e or not e.get("id"):
         continue
-    vid_url = f"https://www.youtube.com/watch?v={vid_id}"
-    try:
-        ydl_opts = {
-            "quiet": True,
-            "no_warnings": True,
-            "skip_download": True,
-            "ignoreerrors": True,
-        }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            v = ydl.extract_info(vid_url, download=False)
-        if not v:
-            continue
-        def dur(s):
-            if not s: return None
-            m,sec = divmod(int(s),60); h,m = divmod(m,60)
-            return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
+    videos.append({
+        "id":          e.get("id"),
+        "url":         f"https://www.youtube.com/watch?v={e.get('id')}",
+        "title":       e.get("title"),
+        "published":   e.get("upload_date") or e.get("timestamp"),
+        "duration":    dur(e.get("duration")),
+        "duration_s":  e.get("duration"),
+        "views":       e.get("view_count"),
+        "description": e.get("description") or "",
+        "thumbnail":   e.get("thumbnail"),
+        "channel":     channel,
+    })
 
-        results.append({
-            "id":          v.get("id"),
-            "url":         vid_url,
-            "title":       v.get("title"),
-            "published":   v.get("upload_date"),
-            "duration":    dur(v.get("duration")),
-            "duration_s":  v.get("duration"),
-            "views":       v.get("view_count"),
-            "likes":       v.get("like_count"),
-            "comments":    v.get("comment_count"),
-            "description": v.get("description") or "",
-            "tags":        v.get("tags") or [],
-            "chapters":    v.get("chapters") or [],
-            "thumbnail":   v.get("thumbnail"),
-            "subtitles":   list((v.get("subtitles") or {}).keys()),
-        })
-        print(f"  [{i+1:3}/{len(entries)}] {results[-1]['duration'] or '?':>7}  {v.get('title','?')}", flush=True)
-    except Exception as ex:
-        print(f"  [{i+1:3}] ERROR on {vid_id}: {ex}", flush=True)
-
-output = {
-    "channel":     channel_name,
-    "channel_url": url,
-    "count":       len(results),
-    "videos":      results,
-}
+result = {"channel": channel, "url": url, "count": len(videos), "videos": videos}
 with open("output/result_full.json", "w") as f:
-    json.dump(output, f, indent=2, ensure_ascii=False)
-print(f"\nDone. {len(results)} videos saved to output/result_full.json", flush=True)
-PYEOF
+    json.dump(result, f, indent=2, ensure_ascii=False)
 
-      - name: Summary
-        run: |
-          python3 - << 'PYEOF'
-          import json
-          d = json.load(open("output/result_full.json"))
-          videos = d["videos"]
-          print(f"\nChannel: {d['channel']}  |  Total: {d['count']}")
-          total_s = sum(v.get("duration_s") or 0 for v in videos)
-          h,rem = divmod(total_s,3600); m,s = divmod(rem,60)
-          print(f"Total runtime: {h}h {m}m")
-          print(f"\nTop 20 by views:")
-          for v in sorted(videos, key=lambda x: x.get("views") or 0, reverse=True)[:20]:
-              print(f"  {v.get('views') or 0:>6}  [{v.get('duration','?'):>7}]  {v['title']}")
-          PYEOF
+print(f"\nDone: {len(videos)} videos from '{channel}'")
+total_s = sum(v.get("duration_s") or 0 for v in videos)
+h, rem = divmod(total_s, 3600); m, s = divmod(rem, 60)
+print(f"Total runtime: {h}h {m}m {s}s")
+print(f"\nAll videos:")
+for v in videos:
+    print(f"  [{str(v.get('duration','?')):>7}]  {str(v.get('views') or '?'):>6} views  {v['title']}")
+PYEOF
 
       - name: Commit
         run: |
           git config user.name  "actions-bot"
           git config user.email "actions@github.com"
           git add output/
-          git diff --staged --quiet || (git commit -m "full extract: all videos with metadata" && git push)
+          git diff --staged --quiet || (git commit -m "full extract: $(wc -l < output/result_full.json) lines" && git push)
