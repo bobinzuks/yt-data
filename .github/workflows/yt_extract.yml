@@ -18,10 +18,6 @@ on:
         description: 'Max results'
         required: false
         default: '50'
-      sort:
-        description: 'newest | oldest | popular'
-        required: false
-        default: 'popular'
 
 jobs:
   extract:
@@ -36,49 +32,37 @@ jobs:
           python-version: '3.11'
 
       - name: Install
-        run: pip install yt-dlp scrapetube
+        run: pip install yt-dlp
 
-      - name: Run extractor
+      - name: Extract
         run: |
-          # Read from inputs or target.txt
           TARGET="${{ github.event.inputs.target }}"
           MODE="${{ github.event.inputs.mode }}"
           LIMIT="${{ github.event.inputs.limit }}"
-          SORT="${{ github.event.inputs.sort }}"
-
           if [ -z "$TARGET" ]; then TARGET=$(cat target.txt); fi
           if [ -z "$MODE" ];   then MODE="channel"; fi
           if [ -z "$LIMIT" ];  then LIMIT="50"; fi
-          if [ -z "$SORT" ];   then SORT="popular"; fi
-
-          echo "Mode:   $MODE"
-          echo "Target: $TARGET"
-          echo "Limit:  $LIMIT"
-          echo "Sort:   $SORT"
-
+          echo "Target: $TARGET | Mode: $MODE | Limit: $LIMIT"
           mkdir -p output
           python3 scripts/yt_extract.py \
             $MODE "$TARGET" \
             --limit $LIMIT \
-            --sort $SORT \
             --out output/result.json
 
-      - name: Preview results
+      - name: Preview
         run: |
           python3 - << 'PYEOF'
           import json
           d = json.load(open("output/result.json"))
           items = d.get("videos") or d.get("results") or []
-          print(f"\n=== {d.get('channel_url', d.get('query',''))} ===")
-          print(f"Total: {len(items)}")
+          print(f"Channel: {d.get('channel','?')}  |  Total: {len(items)}")
           for v in items[:20]:
-              print(f"  [{v.get('duration','?'):>7}] {v.get('views','?'):>12}  {v.get('title','?')}")
+              print(f"  [{str(v.get('duration','?')):>7}] {str(v.get('views','?')):>10}  {v.get('title','?')}")
           PYEOF
 
-      - name: Commit results
+      - name: Commit
         run: |
           git config user.name  "actions-bot"
           git config user.email "actions@github.com"
           git add output/
-          git status
-          git diff --staged --quiet || git commit -m "results: ${{ github.event.inputs.target || 'push trigger' }}" && git push
+          git diff --staged --quiet || (git commit -m "results: ${{ github.event.inputs.target || 'push' }}" && git push)
