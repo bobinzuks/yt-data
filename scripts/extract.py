@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-YouTube channel extractor using InnerTube API directly.
-No yt-dlp, no scraping — uses YouTube's own internal API.
-Pure stdlib, no pip installs needed beyond requests.
+YouTube InnerTube extractor - handles both resolve and direct browse.
+Falls back gracefully at each step.
 """
 import json, os, re, sys, time
 import urllib.request, urllib.error
 
-# ── InnerTube config ──────────────────────────────────────────────────────────
+TARGET = open("target.txt").readline().strip().split()[0]
+print(f"[1] Target: {TARGET}", flush=True)
 
-API_URL = "https://www.youtube.com/youtubei/v1/browse?prettyPrint=false"
+API = "https://www.youtube.com/youtubei/v1"
+KEY = "AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM394"  # public Android key
 
 CONTEXT = {
     "client": {
@@ -17,170 +18,160 @@ CONTEXT = {
         "clientVersion": "19.09.37",
         "androidSdkVersion": 30,
         "userAgent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip",
-        "hl": "en",
-        "gl": "US",
+        "hl": "en", "gl": "US",
     }
 }
 
-REQ_HEADERS = {
-    "Content-Type":             "application/json",
-    "User-Agent":               "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip",
-    "X-YouTube-Client-Name":    "3",
+HEADERS = {
+    "Content-Type": "application/json; charset=UTF-8",
+    "User-Agent": "com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip",
+    "X-YouTube-Client-Name": "3",
     "X-YouTube-Client-Version": "19.09.37",
-    "Accept-Language":          "en-US,en;q=0.9",
 }
 
-VIDEOS_PARAM = "EgZ2aWRlb3PyBgQKAjoA"  # encodes "videos" tab
-
-# ── helpers ───────────────────────────────────────────────────────────────────
-
-def post(body):
+def post(endpoint, body, retries=3):
+    url = f"{API}/{endpoint}?key={KEY}&prettyPrint=false"
     data = json.dumps(body).encode()
-    req = urllib.request.Request(API_URL, data=data, headers=REQ_HEADERS, method="POST")
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.loads(r.read())
-
-def dur_str(s):
-    if not s: return None
-    m, sec = divmod(int(s), 60); h, m = divmod(m, 60)
-    return f"{h}:{m:02d}:{sec:02d}" if h else f"{m}:{sec:02d}"
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, data=data, headers=HEADERS, method="POST")
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read())
+        except Exception as e:
+            print(f"  attempt {attempt+1} failed: {e}", flush=True)
+            if attempt < retries - 1:
+                time.sleep(2 ** attempt)
+    return None
 
 def get_text(obj):
     if not obj: return ""
     if isinstance(obj, str): return obj
-    runs = obj.get("runs") or []
-    return "".join(r.get("text","") for r in runs) or obj.get("simpleText","")
-
-def find_all(obj, key, results=None):
-    """Recursively find all values for a key in nested dicts/lists."""
-    if results is None: results = []
     if isinstance(obj, dict):
-        if key in obj: results.append(obj[key])
-        for v in obj.values(): find_all(v, key, results)
+        if "simpleText" in obj: return obj["simpleText"]
+        return "".join(r.get("text","") for r in obj.get("runs",[]))
+    return ""
+
+def find_all(obj, key, out=None):
+    if out is None: out = []
+    if isinstance(obj, dict):
+        if key in obj: out.append(obj[key])
+        for v in obj.values(): find_all(v, key, out)
     elif isinstance(obj, list):
-        for item in obj: find_all(item, key, results)
-    return results
-
-def extract_videos_from_response(data):
-    """Pull video renderer objects out of any InnerTube browse response."""
-    renderers = find_all(data, "richItemRenderer") or find_all(data, "gridVideoRenderer") or []
-    # richItemRenderer wraps content
-    videos = []
-    for r in renderers:
-        vr = None
-        if "content" in r:
-            vr = r["content"].get("videoRenderer") or r["content"].get("reelItemRenderer")
-        elif "videoId" in r:
-            vr = r
-        if vr:
-            videos.append(vr)
-    # Also try direct videoRenderer search
-    if not videos:
-        videos = find_all(data, "videoRenderer")
-    return videos
-
-def parse_video(vr):
-    vid_id = vr.get("videoId","")
-    title  = get_text(vr.get("title"))
-    views_text = get_text(vr.get("viewCountText") or vr.get("shortViewCountText"))
-    published  = get_text(vr.get("publishedTimeText"))
-    dur_text   = get_text((vr.get("lengthText") or {}).get("simpleText") and vr.get("lengthText") or vr.get("lengthText"))
-    dur_txt    = get_text(vr.get("lengthText")) if vr.get("lengthText") else None
-    desc       = get_text(vr.get("descriptionSnippet"))
-    thumb      = ((vr.get("thumbnail") or {}).get("thumbnails") or [{}])[-1].get("url","")
-    return {
-        "id":        vid_id,
-        "url":       f"https://www.youtube.com/watch?v={vid_id}",
-        "title":     title,
-        "published": published,
-        "duration":  dur_txt,
-        "views":     views_text,
-        "description": desc,
-        "thumbnail": thumb,
-    }
+        for i in obj: find_all(i, key, out)
+    return out
 
 def find_continuation(data):
-    tokens = find_all(data, "token")
-    # continuation tokens are long base64-ish strings
-    for t in tokens:
+    for t in find_all(data, "token"):
         if isinstance(t, str) and len(t) > 50:
             return t
     return None
 
-# ── main ──────────────────────────────────────────────────────────────────────
+def extract_videos(data):
+    out = []
+    for key in ["richItemRenderer", "gridVideoRenderer", "videoRenderer"]:
+        items = find_all(data, key)
+        for item in items:
+            vr = item.get("content", {}).get("videoRenderer") or item if "videoId" in item else None
+            if vr and vr.get("videoId"):
+                out.append(vr)
+    return out
 
-def resolve_channel(handle):
-    """Get browseId from @handle by fetching channel page."""
-    handle = handle.lstrip("@")
-    url = f"https://www.youtube.com/@{handle}"
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-    })
-    with urllib.request.urlopen(req, timeout=15) as r:
-        html = r.read().decode("utf-8", errors="ignore")
-    m = re.search(r'"browseId"\s*:\s*"(UC[^"]{20,})"', html)
-    if m: return m.group(1)
-    m = re.search(r'"channelId"\s*:\s*"(UC[^"]{20,})"', html)
-    if m: return m.group(1)
-    raise ValueError(f"Could not find browseId for @{handle}")
+def parse_video(vr):
+    return {
+        "id":          vr.get("videoId",""),
+        "url":         f"https://www.youtube.com/watch?v={vr.get('videoId','')}",
+        "title":       get_text(vr.get("title")),
+        "published":   get_text(vr.get("publishedTimeText")),
+        "duration":    get_text(vr.get("lengthText")),
+        "views":       get_text(vr.get("viewCountText") or vr.get("shortViewCountText")),
+        "description": get_text(vr.get("descriptionSnippet")),
+        "thumbnail":   ((vr.get("thumbnail") or {}).get("thumbnails") or [{}])[-1].get("url",""),
+    }
 
-def get_all_videos(browse_id):
-    videos = []
-    page = 0
+# ── Step 1: Resolve browse ID ─────────────────────────────────────────────────
+print("[2] Resolving channel browse ID...", flush=True)
 
-    # Initial request
-    body = {"context": CONTEXT, "browseId": browse_id, "params": VIDEOS_PARAM}
-    data = post(body)
-    vrs = extract_videos_from_response(data)
+browse_id = None
+
+# Method A: search InnerTube
+handle = TARGET.lstrip("@")
+body = {"context": CONTEXT, "query": handle}
+resp = post("search", body)
+if resp:
+    channels = find_all(resp, "channelRenderer")
+    for ch in channels:
+        ch_id = ch.get("channelId","")
+        ch_title = get_text(ch.get("title"))
+        print(f"  found channel: {ch_title} ({ch_id})", flush=True)
+        if handle.lower() in ch_title.lower() or handle.lower() in ch_id.lower():
+            browse_id = ch_id
+            break
+    if not browse_id and channels:
+        browse_id = channels[0].get("channelId")
+        print(f"  using first result: {browse_id}", flush=True)
+
+# Method B: fetch channel page HTML
+if not browse_id:
+    print("  search failed, trying HTML page...", flush=True)
+    try:
+        req = urllib.request.Request(
+            f"https://www.youtube.com/@{handle}",
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+        )
+        with urllib.request.urlopen(req, timeout=15) as r:
+            html = r.read().decode("utf-8", errors="ignore")
+        m = re.search(r'"browseId"\s*:\s*"(UC[^"]{20,})"', html) or \
+            re.search(r'"channelId"\s*:\s*"(UC[^"]{20,})"', html)
+        if m:
+            browse_id = m.group(1)
+            print(f"  resolved from HTML: {browse_id}", flush=True)
+    except Exception as e:
+        print(f"  HTML fetch failed: {e}", flush=True)
+
+if not browse_id:
+    print("ERROR: Could not resolve channel ID", flush=True)
+    sys.exit(1)
+
+print(f"[3] Browse ID: {browse_id}", flush=True)
+
+# ── Step 2: Fetch all videos ──────────────────────────────────────────────────
+print("[4] Fetching videos...", flush=True)
+videos = []
+page = 0
+
+body = {"context": CONTEXT, "browseId": browse_id, "params": "EgZ2aWRlb3PyBgQKAjoA"}
+data = post("browse", body)
+if not data:
+    print("ERROR: InnerTube browse failed", flush=True)
+    sys.exit(1)
+
+vrs = extract_videos(data)
+for vr in vrs:
+    v = parse_video(vr)
+    if v["id"]: videos.append(v)
+print(f"  page 1: +{len(vrs)} (total {len(videos)})", flush=True)
+
+while True:
+    token = find_continuation(data)
+    if not token: break
+    page += 1
+    time.sleep(0.3)
+    data = post("browse", {"context": CONTEXT, "continuation": token})
+    if not data: break
+    vrs = extract_videos(data)
+    if not vrs: break
     for vr in vrs:
         v = parse_video(vr)
         if v["id"]: videos.append(v)
-    print(f"  page {page+1}: +{len(vrs)} videos (total {len(videos)})", flush=True)
+    print(f"  page {page+1}: +{len(vrs)} (total {len(videos)})", flush=True)
 
-    # Paginate
-    while True:
-        token = find_continuation(data)
-        if not token: break
-        page += 1
-        time.sleep(0.5)
-        try:
-            body = {"context": CONTEXT, "continuation": token}
-            data = post(body)
-            vrs = extract_videos_from_response(data)
-            if not vrs: break
-            for vr in vrs:
-                v = parse_video(vr)
-                if v["id"]: videos.append(v)
-            print(f"  page {page+1}: +{len(vrs)} videos (total {len(videos)})", flush=True)
-        except Exception as e:
-            print(f"  pagination error: {e}", flush=True)
-            break
+# ── Step 3: Save ──────────────────────────────────────────────────────────────
+print(f"[5] Saving {len(videos)} videos...", flush=True)
+os.makedirs("output", exist_ok=True)
+out = {"channel": handle, "browse_id": browse_id, "count": len(videos), "videos": videos}
+with open("output/result_full.json", "w") as f:
+    json.dump(out, f, indent=2, ensure_ascii=False)
 
-    return videos
-
-
-if __name__ == "__main__":
-    target = open("target.txt").readline().strip().split()[0]
-    print(f"Target: {target}", flush=True)
-
-    print("Resolving channel...", flush=True)
-    browse_id = resolve_channel(target)
-    print(f"Browse ID: {browse_id}", flush=True)
-
-    print("Fetching all videos via InnerTube...", flush=True)
-    videos = get_all_videos(browse_id)
-
-    os.makedirs("output", exist_ok=True)
-    result = {
-        "channel": target,
-        "browse_id": browse_id,
-        "count": len(videos),
-        "videos": videos,
-    }
-    with open("output/result_full.json", "w") as f:
-        json.dump(result, f, indent=2, ensure_ascii=False)
-
-    print(f"\nDONE: {len(videos)} videos saved", flush=True)
-    for v in videos[:20]:
-        print(f"  [{v.get('duration','?'):>7}]  {v.get('views','?'):>12}  {v['title']}", flush=True)
+print(f"\nDONE: {len(videos)} videos", flush=True)
+for v in videos[:15]:
+    print(f"  [{v.get('duration','?'):>7}]  {v.get('views','?'):>12}  {v['title']}", flush=True)
