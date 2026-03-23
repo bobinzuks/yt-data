@@ -2,8 +2,6 @@ name: YouTube Extractor
 
 on:
   push:
-    paths:
-      - 'target.txt'
   workflow_dispatch:
 
 jobs:
