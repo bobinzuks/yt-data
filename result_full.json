@@ -1,0 +1,19 @@
+{
+  "channel": "vinny stvincent",
+  "count": 1,
+  "videos": [
+    {
+      "id": "lk3BhqVeWKI",
+      "url": "https://www.youtube.com/watch?v=lk3BhqVeWKI",
+      "title": "Radioactivity",
+      "published": "20230817",
+      "duration": "1:06",
+      "duration_s": 66,
+      "views": 248,
+      "likes": null,
+      "description": "",
+      "tags": [],
+      "chapters": []
+    }
+  ]
+}
