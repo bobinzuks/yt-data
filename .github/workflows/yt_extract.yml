@@ -12,78 +12,68 @@ on:
         default: '@vinnystvincent9788'
 
 jobs:
-  # Job 1: Get total video count + split into chunks
+  # Job 1: get all video IDs, split into 4 chunks
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      chunks: ${{ steps.split.outputs.chunks }}
-      total:  ${{ steps.split.outputs.total }}
+      chunks:  ${{ steps.split.outputs.chunks }}
       channel: ${{ steps.split.outputs.channel }}
+      total:   ${{ steps.split.outputs.total }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT }}
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - run: pip install yt-dlp -q
 
-      - name: Get all video IDs
+      - name: Get all video IDs and split
         id: split
         run: |
           TARGET="${{ github.event.inputs.target }}"
-          if [ -z "$TARGET" ]; then TARGET=$(head -1 target.txt | tr -d '\r\n'); fi
+          if [ -z "$TARGET" ]; then TARGET=$(head -1 target.txt | tr -d '\r\n# '); fi
           echo "Target: $TARGET"
 
-          python3 << PYEOF
-          import yt_dlp, json, math
+          python3 - "$TARGET" << 'PYEOF'
+          import yt_dlp, json, math, os, sys
 
-          target = "$TARGET"
+          target = sys.argv[1]
           url = f"https://www.youtube.com/{target}/videos" if target.startswith("@") else target
+          print(f"Scanning: {url}", flush=True)
 
-          print(f"Getting video list from: {url}", flush=True)
           with yt_dlp.YoutubeDL({"quiet":True,"no_warnings":True,"extract_flat":"in_playlist","ignoreerrors":True}) as ydl:
               info = ydl.extract_info(url, download=False)
 
           entries = [e for e in (info.get("entries") or []) if e and e.get("id")]
           channel = info.get("channel") or info.get("uploader") or target
           total = len(entries)
-          print(f"Total videos: {total}  Channel: {channel}", flush=True)
+          print(f"Found {total} videos — Channel: {channel}", flush=True)
 
-          # Split into 4 chunks for parallel runners
           n = 4
           chunk_size = math.ceil(total / n)
           chunks = []
           for i in range(n):
-              start = i * chunk_size
-              end = min(start + chunk_size, total)
-              if start < total:
-                  chunk_ids = [e["id"] for e in entries[start:end]]
-                  chunks.append({"index": i, "ids": chunk_ids, "start": start, "end": end})
+              s, e2 = i * chunk_size, min((i+1) * chunk_size, total)
+              if s < total:
+                  chunks.append({"index": i, "ids": [x["id"] for x in entries[s:e2]], "start": s, "end": e2})
 
-          # Save full ID list
-          import os
           os.makedirs("output", exist_ok=True)
           with open("output/all_ids.json", "w") as f:
-              json.dump({"channel": channel, "total": total, "entries": entries, "chunks": chunks}, f)
+              json.dump({"channel": channel, "total": total, "chunks": chunks}, f)
 
-          # Set outputs
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+          out = os.environ["GITHUB_OUTPUT"]
+          with open(out, "a") as f:
               f.write(f"total={total}\n")
               f.write(f"channel={channel}\n")
               f.write(f"chunks={json.dumps(chunks)}\n")
           PYEOF
 
-      - name: Commit ID list
-        run: |
-          git config user.name "actions-bot"
-          git config user.email "actions@github.com"
-          git add output/
-          git diff --staged --quiet || (git commit -m "extract: video IDs for ${{ github.event.inputs.target || 'target' }}" && git push)
+      - name: Save ID list
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-ids
+          path: output/all_ids.json
 
-  # Job 2: Parallel deep extract across 4 runners (4 different IPs)
+  # Job 2: 4 parallel runners, each a different GitHub IP
   extract:
     needs: prepare
     runs-on: ubuntu-latest
@@ -93,24 +83,19 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.PAT }}
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - run: pip install yt-dlp -q
 
-      - name: Extract chunk ${{ matrix.chunk.index }}
+      - name: Extract chunk ${{ matrix.chunk.index }} (videos ${{ matrix.chunk.start }}-${{ matrix.chunk.end }})
         run: |
           python3 << PYEOF
           import yt_dlp, json, os, time
 
-          chunk = ${{ toJson(matrix.chunk) }}
-          ids = chunk["ids"]
-          idx = chunk["index"]
-          print(f"Runner {idx}: extracting {len(ids)} videos ({chunk['start']}-{chunk['end']})", flush=True)
+          ids  = ${{ toJson(matrix.chunk.ids) }}
+          idx  = ${{ matrix.chunk.index }}
+          print(f"Runner {idx}: {len(ids)} videos", flush=True)
 
           def dur(s):
               if not s: return None
@@ -119,86 +104,93 @@ jobs:
 
           results = []
           for i, vid_id in enumerate(ids):
-              url = f"https://www.youtube.com/watch?v={vid_id}"
+              vurl = f"https://www.youtube.com/watch?v={vid_id}"
               try:
                   with yt_dlp.YoutubeDL({"quiet":True,"no_warnings":True,"skip_download":True,"ignoreerrors":True}) as ydl:
-                      v = ydl.extract_info(url, download=False)
+                      v = ydl.extract_info(vurl, download=False)
                   if not v: continue
                   results.append({
-                      "id": v.get("id"), "url": url,
+                      "id": v.get("id"), "url": vurl,
                       "title": v.get("title"),
                       "published": v.get("upload_date"),
                       "duration": dur(v.get("duration")),
                       "duration_s": v.get("duration"),
                       "views": v.get("view_count"),
                       "likes": v.get("like_count"),
-                      "description": v.get("description") or "",
+                      "description": (v.get("description") or "")[:2000],
                       "tags": v.get("tags") or [],
                       "chapters": v.get("chapters") or [],
-                      "thumbnail": v.get("thumbnail"),
                   })
-                  print(f"  [{i+1}/{len(ids)}] {results[-1]['duration'] or '?':>7}  {v.get('title','?')}", flush=True)
-              except Exception as e:
-                  print(f"  [{i+1}] ERROR {vid_id}: {e}", flush=True)
-              time.sleep(0.3)  # gentle rate limiting
+                  print(f"  [{i+1:3}/{len(ids)}] {results[-1]['duration'] or '?':>7}  {v.get('title','?')}", flush=True)
+              except Exception as ex:
+                  print(f"  [{i+1:3}] SKIP {vid_id}: {ex}", flush=True)
+              time.sleep(0.2)
 
           os.makedirs("output", exist_ok=True)
-          with open(f"output/chunk_{idx}.json", "w") as f:
+          out = f"output/chunk_{idx}.json"
+          with open(out, "w") as f:
               json.dump({"chunk": idx, "count": len(results), "videos": results}, f, indent=2, ensure_ascii=False)
-          print(f"Saved {len(results)} videos to output/chunk_{idx}.json")
+          print(f"\nDone: {len(results)} videos → {out}")
           PYEOF
 
-      - name: Commit chunk
-        run: |
-          git config user.name "actions-bot"
-          git config user.email "actions@github.com"
-          git pull --rebase origin main
-          git add output/chunk_${{ matrix.chunk.index }}.json
-          git diff --staged --quiet || (git commit -m "chunk ${{ matrix.chunk.index }}: ${{ matrix.chunk.start }}-${{ matrix.chunk.end }}" && git push)
+      - name: Upload chunk
+        uses: actions/upload-artifact@v4
+        with:
+          name: chunk-${{ matrix.chunk.index }}
+          path: output/chunk_${{ matrix.chunk.index }}.json
 
-  # Job 3: Merge all chunks into final result
+  # Job 3: merge all chunks, commit final JSON
   merge:
     needs: extract
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          token: ${{ secrets.PAT }}
+          path: output
 
-      - run: git pull origin main
-
-      - name: Merge chunks
+      - name: Merge and commit
         run: |
           python3 << 'PYEOF'
           import json, glob, os
 
-          chunks = sorted(glob.glob("output/chunk_*.json"))
+          chunks = sorted(glob.glob("output/chunk-*/chunk_*.json"))
+          print(f"Merging {len(chunks)} chunks...")
           all_videos = []
           for f in chunks:
               d = json.load(open(f))
               all_videos.extend(d["videos"])
-              print(f"  {f}: {d['count']} videos")
+              print(f"  {os.path.basename(f)}: {d['count']} videos")
 
-          ids_data = json.load(open("output/all_ids.json"))
-          result = {
-              "channel": ids_data["channel"],
-              "count": len(all_videos),
-              "videos": all_videos
-          }
-          with open("output/result_full.json", "w") as f:
+          ids_files = glob.glob("output/all-ids/all_ids.json")
+          channel = "vinny stvincent"
+          if ids_files:
+              ids_data = json.load(open(ids_files[0]))
+              channel = ids_data.get("channel", channel)
+
+          result = {"channel": channel, "count": len(all_videos), "videos": all_videos}
+
+          os.makedirs("output/final", exist_ok=True)
+          with open("output/final/result_full.json", "w") as f:
               json.dump(result, f, indent=2, ensure_ascii=False)
 
           total_s = sum(v.get("duration_s") or 0 for v in all_videos)
           h,rem=divmod(total_s,3600); m,s=divmod(rem,60)
-          print(f"\nMerged {len(all_videos)} videos — total runtime {h}h {m}m")
-          print(f"\nTop 20 by views:")
-          for v in sorted(all_videos, key=lambda x: x.get("views") or 0, reverse=True)[:20]:
-              print(f"  {v.get('views') or 0:>6} views  [{v.get('duration','?'):>7}]  {v['title']}")
+          print(f"\n{'='*60}")
+          print(f"Channel: {channel}")
+          print(f"Total videos: {len(all_videos)}  |  Runtime: {h}h {m}m")
+          print(f"\nTop 25 by views:")
+          for v in sorted(all_videos, key=lambda x: x.get("views") or 0, reverse=True)[:25]:
+              print(f"  {v.get('views') or 0:>6}  [{v.get('duration','?'):>7}]  {v['title']}")
           PYEOF
 
-      - name: Commit final result
-        run: |
-          git config user.name "actions-bot"
+          # Commit to repo
+          git config user.name  "actions-bot"
           git config user.email "actions@github.com"
-          git add output/result_full.json
-          git diff --staged --quiet || (git commit -m "DONE: full extract complete" && git push)
+          cp output/final/result_full.json result_full.json
+          git add result_full.json
+          git diff --staged --quiet || (git commit -m "COMPLETE: full channel extract $(date +%Y-%m-%d)" && git push)
