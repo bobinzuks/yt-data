@@ -20,29 +20,49 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install yt-dlp scrapetube
-      - name: Extract
+
+      - name: Install deps
+        run: |
+          pip install yt-dlp scrapetube
+
+      - name: Set target
+        id: params
         run: |
           TARGET="${{ github.event.inputs.target }}"
-          if [ -z "$TARGET" ]; then TARGET=$(cat target.txt | head -1 | tr -d '\n'); fi
-          LIMIT="${{ github.event.inputs.limit }}"
-          if [ -z "$LIMIT" ]; then LIMIT=50; fi
+          if [ -z "$TARGET" ]; then
+            TARGET=$(head -1 target.txt | tr -d '\r\n')
+          fi
+          echo "target=$TARGET" >> $GITHUB_OUTPUT
+          echo "Using target: $TARGET"
+
+      - name: Extract
+        run: |
           mkdir -p output
-          python3 scripts/yt_extract.py channel "$TARGET" --limit $LIMIT --sort popular \
-            --out "output/result.json"
-          python3 -c "
+          python3 scripts/yt_extract.py \
+            channel \
+            "${{ steps.params.outputs.target }}" \
+            --limit 50 \
+            --sort popular \
+            --out output/result.json
+
+      - name: Preview
+        run: |
+          python3 - << 'EOF'
           import json
-          d = json.load(open('output/result.json'))
-          print(f\"Got {d['count']} videos\")
-          for v in d['videos'][:10]:
-              print(f\"  {v['title']}\")
-          "
-      - name: Commit
+          d = json.load(open("output/result.json"))
+          print(f"Got {d['count']} videos")
+          for v in d['videos'][:15]:
+              print(f"  [{v.get('duration','?'):>7}] {v.get('views','?'):>12}  {v['title']}")
+          EOF
+
+      - name: Commit results
         run: |
           git config user.name  "actions-bot"
           git config user.email "actions@github.com"
           git add output/
-          git diff --staged --quiet || (git commit -m "results: $(cat target.txt | head -1)" && git push)
+          git diff --staged --quiet || git commit -m "results: ${{ steps.params.outputs.target }}"
+          git push
