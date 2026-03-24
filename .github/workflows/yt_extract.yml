@@ -25,5 +25,5 @@ jobs:
           echo "Got $COUNT videos"
           git config user.name  "actions-bot"
           git config user.email "actions@github.com"
-          git add output/result_full.json
+          git add output/
           git diff --staged --quiet || (git commit -m "results: ${COUNT} videos" && git push)
