@@ -2,53 +2,32 @@
 import json, os, sys, time
 import urllib.request, urllib.error
 
-TARGET     = open("target.txt").readline().strip().split()[0]
-BROWSE_ID  = "UCDwMsoCCKI_tcXBfgwqqGeg"   # confirmed from last run
-API        = "https://www.youtube.com/youtubei/v1"
+BROWSE_ID = "UCDwMsoCCKI_tcXBfgwqqGeg"
+TARGET    = "@vinnystvincent9788"
+API       = "https://www.youtube.com/youtubei/v1"
 
-# WEB client — works for channel browse
 WEB_CONTEXT = {
     "client": {
         "clientName": "WEB",
         "clientVersion": "2.20240101.00.00",
-        "hl": "en",
-        "gl": "US",
+        "hl": "en", "gl": "US",
     }
 }
 
-WEB_HEADERS = {
-    "Content-Type":  "application/json; charset=UTF-8",
-    "User-Agent":    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
+HEADERS = {
+    "Content-Type": "application/json; charset=UTF-8",
+    "User-Agent":   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     "X-YouTube-Client-Name":    "1",
     "X-YouTube-Client-Version": "2.20240101.00.00",
     "Origin":  "https://www.youtube.com",
     "Referer": "https://www.youtube.com/",
 }
 
-# WEB videos tab params (base64 of protobuf: videos tab)
-VIDEOS_PARAMS = "EgZ2aWRlb3M%3D"
-
-def post(endpoint, body, retries=3):
+def post(endpoint, body):
     url = f"{API}/{endpoint}?prettyPrint=false"
-    data = json.dumps(body).encode()
-    for attempt in range(retries):
-        try:
-            req = urllib.request.Request(url, data=data, headers=WEB_HEADERS, method="POST")
-            with urllib.request.urlopen(req, timeout=20) as r:
-                return json.loads(r.read())
-        except urllib.error.HTTPError as e:
-            print(f"  HTTP {e.code} on attempt {attempt+1}", flush=True)
-            if e.code == 400 and attempt == 0:
-                # Try without params on retry
-                pass
-            if attempt < retries - 1:
-                time.sleep(1.5)
-        except Exception as e:
-            print(f"  attempt {attempt+1}: {e}", flush=True)
-            if attempt < retries - 1:
-                time.sleep(1.5)
-    return None
+    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=HEADERS, method="POST")
+    with urllib.request.urlopen(req, timeout=20) as r:
+        return json.loads(r.read())
 
 def get_text(obj):
     if not obj: return ""
@@ -73,18 +52,6 @@ def find_continuation(data):
             return t
     return None
 
-def extract_video_renderers(data):
-    out = []
-    # richItemRenderer (channel page layout)
-    for r in find_all(data, "richItemRenderer"):
-        vr = (r.get("content") or {}).get("videoRenderer")
-        if vr and vr.get("videoId"): out.append(vr)
-    # direct videoRenderer
-    if not out:
-        for vr in find_all(data, "videoRenderer"):
-            if vr.get("videoId"): out.append(vr)
-    return out
-
 def parse_video(vr):
     return {
         "id":          vr.get("videoId",""),
@@ -97,63 +64,74 @@ def parse_video(vr):
         "thumbnail":   ((vr.get("thumbnail") or {}).get("thumbnails") or [{}])[-1].get("url",""),
     }
 
-# ── Fetch all videos ──────────────────────────────────────────────────────────
-print(f"Target:    {TARGET}", flush=True)
 print(f"Browse ID: {BROWSE_ID}", flush=True)
-print("Fetching videos...", flush=True)
+print("Fetching page 1...", flush=True)
+
+data = post("browse", {"context": WEB_CONTEXT, "browseId": BROWSE_ID, "params": "EgZ2aWRlb3M%3D"})
+
+# Dump top-level keys and structure for debugging
+print(f"Top keys: {list(data.keys())}", flush=True)
+os.makedirs("output", exist_ok=True)
+
+# Save raw response for inspection
+with open("output/raw_response.json", "w") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
+print("Raw response saved to output/raw_response.json", flush=True)
+
+# Try ALL known video renderer key names
+video_keys = ["videoRenderer", "richItemRenderer", "gridVideoRenderer",
+              "compactVideoRenderer", "reelItemRenderer", "shortsLockupViewModel"]
 
 videos = []
+for key in video_keys:
+    found = find_all(data, key)
+    if found:
+        print(f"  Found {len(found)} '{key}' items", flush=True)
+        for item in found:
+            # Handle richItemRenderer wrapper
+            vr = item
+            if key == "richItemRenderer":
+                vr = (item.get("content") or {}).get("videoRenderer") or item
+            if vr and vr.get("videoId"):
+                videos.append(parse_video(vr))
 
-# Initial browse — WEB client, videos tab
-body = {"context": WEB_CONTEXT, "browseId": BROWSE_ID, "params": "EgZ2aWRlb3M%3D"}
-print(f"  POST browse page 1...", flush=True)
-data = post("browse", body)
+# Also try finding any videoId directly
+all_vid_ids = find_all(data, "videoId")
+print(f"  Total videoId fields found: {len(all_vid_ids)}", flush=True)
+for vid_id in all_vid_ids[:5]:
+    print(f"    videoId: {vid_id}", flush=True)
 
-if not data:
-    # Retry without params
-    print("  retrying without params...", flush=True)
-    body = {"context": WEB_CONTEXT, "browseId": BROWSE_ID}
-    data = post("browse", body)
+print(f"\nExtracted {len(videos)} videos from page 1", flush=True)
 
-if not data:
-    print("ERROR: InnerTube browse failed completely", flush=True)
-    sys.exit(1)
-
-vrs = extract_video_renderers(data)
-for vr in vrs:
-    v = parse_video(vr)
-    if v["id"]: videos.append(v)
-print(f"  page 1: {len(vrs)} videos (total {len(videos)})", flush=True)
-
-# Paginate via continuation tokens
+# Paginate
 page = 1
-while True:
+while page < 50:
     token = find_continuation(data)
     if not token:
-        print("  no more pages", flush=True)
+        print("No more pages", flush=True)
         break
     page += 1
     time.sleep(0.4)
-    print(f"  POST browse page {page}...", flush=True)
+    print(f"Fetching page {page}...", flush=True)
     data = post("browse", {"context": WEB_CONTEXT, "continuation": token})
-    if not data:
-        print("  pagination stopped (no response)", flush=True)
-        break
-    vrs = extract_video_renderers(data)
-    if not vrs:
-        print("  pagination stopped (no videos in response)", flush=True)
-        break
-    for vr in vrs:
-        v = parse_video(vr)
-        if v["id"]: videos.append(v)
-    print(f"  page {page}: +{len(vrs)} videos (total {len(videos)})", flush=True)
+    if not data: break
 
-# ── Save ──────────────────────────────────────────────────────────────────────
-os.makedirs("output", exist_ok=True)
+    new_vids = []
+    for key in video_keys:
+        for item in find_all(data, key):
+            vr = item
+            if key == "richItemRenderer":
+                vr = (item.get("content") or {}).get("videoRenderer") or item
+            if vr and vr.get("videoId"):
+                new_vids.append(parse_video(vr))
+    videos.extend(new_vids)
+    print(f"  page {page}: +{len(new_vids)} (total {len(videos)})", flush=True)
+    if not new_vids: break
+
 result = {"channel": TARGET, "browse_id": BROWSE_ID, "count": len(videos), "videos": videos}
 with open("output/result_full.json", "w") as f:
     json.dump(result, f, indent=2, ensure_ascii=False)
 
-print(f"\nDONE: {len(videos)} videos saved", flush=True)
-for v in videos[:20]:
-    print(f"  [{v.get('duration','?'):>7}]  {v.get('views','?'):>14}  {v['title']}", flush=True)
+print(f"\nDONE: {len(videos)} videos", flush=True)
+for v in videos[:10]:
+    print(f"  [{v.get('duration','?'):>7}]  {v.get('views','?'):>12}  {v['title']}", flush=True)
