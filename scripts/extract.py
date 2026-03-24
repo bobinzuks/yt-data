@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
 import json, os, sys, time
-import urllib.request, urllib.error
+import urllib.request
 
-BROWSE_ID = "UCDwMsoCCKI_tcXBfgwqqGeg"
-TARGET    = "@vinnystvincent9788"
-API       = "https://www.youtube.com/youtubei/v1"
+BROWSE_ID     = "UCDwMsoCCKI_tcXBfgwqqGeg"
+VIDEOS_PARAMS = "EgZ2aWRlb3PyBgQKAjoA"   # exact value from Videos tab endpoint
+TARGET        = "@vinnystvincent9788"
+API           = "https://www.youtube.com/youtubei/v1/browse?prettyPrint=false"
 
-WEB_CONTEXT = {
-    "client": {
-        "clientName": "WEB",
-        "clientVersion": "2.20240101.00.00",
-        "hl": "en", "gl": "US",
-    }
-}
+WEB_CONTEXT = {"client": {"clientName":"WEB","clientVersion":"2.20240101.00.00","hl":"en","gl":"US"}}
 
 HEADERS = {
     "Content-Type": "application/json; charset=UTF-8",
@@ -23,11 +18,16 @@ HEADERS = {
     "Referer": "https://www.youtube.com/",
 }
 
-def post(endpoint, body):
-    url = f"{API}/{endpoint}?prettyPrint=false"
-    req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=HEADERS, method="POST")
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return json.loads(r.read())
+def post(body, retries=3):
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(API, data=json.dumps(body).encode(), headers=HEADERS, method="POST")
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read())
+        except Exception as e:
+            print(f"  attempt {attempt+1} failed: {e}", flush=True)
+            if attempt < retries-1: time.sleep(2)
+    return None
 
 def get_text(obj):
     if not obj: return ""
@@ -52,20 +52,29 @@ def find_continuation(data):
             return t
     return None
 
-def extract_all_videos(data):
-    """Extract from ALL renderer types - gridVideoRenderer, videoRenderer, richItemRenderer"""
-    seen = set()
+def extract_videos(data, seen):
+    """Extract all unique video dicts from any response structure."""
     videos = []
-
-    # All known renderer types
-    for key in ["gridVideoRenderer", "videoRenderer", "richItemRenderer",
-                "compactVideoRenderer", "reelItemRenderer"]:
-        for item in find_all(data, key):
-            # unwrap richItemRenderer
-            vr = (item.get("content") or {}).get("videoRenderer") if key == "richItemRenderer" else item
-            if not vr: continue
-            vid_id = vr.get("videoId","")
-            if not vid_id or vid_id in seen: continue
+    # gridVideoRenderer (Videos tab grid layout)
+    for vr in find_all(data, "gridVideoRenderer"):
+        vid_id = vr.get("videoId","")
+        if vid_id and vid_id not in seen and "title" in vr:
+            seen.add(vid_id)
+            videos.append({
+                "id":          vid_id,
+                "url":         f"https://www.youtube.com/watch?v={vid_id}",
+                "title":       get_text(vr.get("title")),
+                "published":   get_text(vr.get("publishedTimeText")),
+                "duration":    get_text(vr.get("lengthText")),
+                "views":       get_text(vr.get("viewCountText") or vr.get("shortViewCountText")),
+                "description": get_text(vr.get("descriptionSnippet")),
+                "thumbnail":   ((vr.get("thumbnail") or {}).get("thumbnails") or [{}])[-1].get("url",""),
+            })
+    # richItemRenderer > videoRenderer (alternative layout)
+    for item in find_all(data, "richItemRenderer"):
+        vr = (item.get("content") or {}).get("videoRenderer") or {}
+        vid_id = vr.get("videoId","")
+        if vid_id and vid_id not in seen and "title" in vr:
             seen.add(vid_id)
             videos.append({
                 "id":          vid_id,
@@ -79,46 +88,45 @@ def extract_all_videos(data):
             })
     return videos
 
-print(f"Browse ID: {BROWSE_ID}", flush=True)
+print(f"Target: {TARGET}  Browse: {BROWSE_ID}", flush=True)
 
+seen = set()
 videos = []
-seen_ids = set()
-page = 0
 
-# Initial request
-data = post("browse", {"context": WEB_CONTEXT, "browseId": BROWSE_ID, "params": "EgZ2aWRlb3M%3D"})
-page_vids = extract_all_videos(data)
-for v in page_vids:
-    if v["id"] not in seen_ids:
-        seen_ids.add(v["id"])
-        videos.append(v)
+# Page 1 — use exact params from Videos tab
+data = post({"context": WEB_CONTEXT, "browseId": BROWSE_ID, "params": VIDEOS_PARAMS})
+if not data:
+    print("ERROR: initial browse failed", flush=True)
+    sys.exit(1)
+
+os.makedirs("output", exist_ok=True)
+
+page_vids = extract_videos(data, seen)
+videos.extend(page_vids)
 print(f"  page 1: +{len(page_vids)} → total {len(videos)}", flush=True)
 
-# Save raw first page for inspection
-os.makedirs("output", exist_ok=True)
-with open("output/raw_response.json","w") as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
-
 # Paginate
+page = 1
 while True:
     token = find_continuation(data)
     if not token:
-        print("  no more pages", flush=True)
+        print("  no continuation token — done", flush=True)
         break
     page += 1
     time.sleep(0.4)
-    data = post("browse", {"context": WEB_CONTEXT, "continuation": token})
-    if not data: break
-    page_vids = extract_all_videos(data)
-    new = [v for v in page_vids if v["id"] not in seen_ids]
-    for v in new:
-        seen_ids.add(v["id"])
-        videos.append(v)
-    print(f"  page {page+1}: +{len(new)} → total {len(videos)}", flush=True)
-    if not new: break
+    data = post({"context": WEB_CONTEXT, "continuation": token})
+    if not data:
+        print("  no response — stopping", flush=True)
+        break
+    page_vids = extract_videos(data, seen)
+    videos.extend(page_vids)
+    print(f"  page {page}: +{len(page_vids)} → total {len(videos)}", flush=True)
+    if not page_vids and page > 2:
+        print("  empty page — done", flush=True)
+        break
 
 result = {"channel": TARGET, "browse_id": BROWSE_ID, "count": len(videos), "videos": videos}
-with open("output/result_full.json","w") as f:
+with open("output/result_full.json", "w") as f:
     json.dump(result, f, indent=2, ensure_ascii=False)
 
 print(f"\nDONE: {len(videos)} videos", flush=True)
