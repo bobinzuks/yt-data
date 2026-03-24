@@ -52,86 +52,75 @@ def find_continuation(data):
             return t
     return None
 
-def parse_video(vr):
-    return {
-        "id":          vr.get("videoId",""),
-        "url":         f"https://www.youtube.com/watch?v={vr.get('videoId','')}",
-        "title":       get_text(vr.get("title")),
-        "published":   get_text(vr.get("publishedTimeText")),
-        "duration":    get_text(vr.get("lengthText")),
-        "views":       get_text(vr.get("viewCountText") or vr.get("shortViewCountText")),
-        "description": get_text(vr.get("descriptionSnippet")),
-        "thumbnail":   ((vr.get("thumbnail") or {}).get("thumbnails") or [{}])[-1].get("url",""),
-    }
+def extract_all_videos(data):
+    """Extract from ALL renderer types - gridVideoRenderer, videoRenderer, richItemRenderer"""
+    seen = set()
+    videos = []
+
+    # All known renderer types
+    for key in ["gridVideoRenderer", "videoRenderer", "richItemRenderer",
+                "compactVideoRenderer", "reelItemRenderer"]:
+        for item in find_all(data, key):
+            # unwrap richItemRenderer
+            vr = (item.get("content") or {}).get("videoRenderer") if key == "richItemRenderer" else item
+            if not vr: continue
+            vid_id = vr.get("videoId","")
+            if not vid_id or vid_id in seen: continue
+            seen.add(vid_id)
+            videos.append({
+                "id":          vid_id,
+                "url":         f"https://www.youtube.com/watch?v={vid_id}",
+                "title":       get_text(vr.get("title")),
+                "published":   get_text(vr.get("publishedTimeText")),
+                "duration":    get_text(vr.get("lengthText")),
+                "views":       get_text(vr.get("viewCountText") or vr.get("shortViewCountText")),
+                "description": get_text(vr.get("descriptionSnippet")),
+                "thumbnail":   ((vr.get("thumbnail") or {}).get("thumbnails") or [{}])[-1].get("url",""),
+            })
+    return videos
 
 print(f"Browse ID: {BROWSE_ID}", flush=True)
-print("Fetching page 1...", flush=True)
-
-data = post("browse", {"context": WEB_CONTEXT, "browseId": BROWSE_ID, "params": "EgZ2aWRlb3M%3D"})
-
-# Dump top-level keys and structure for debugging
-print(f"Top keys: {list(data.keys())}", flush=True)
-os.makedirs("output", exist_ok=True)
-
-# Save raw response for inspection
-with open("output/raw_response.json", "w") as f:
-    json.dump(data, f, indent=2, ensure_ascii=False)
-print("Raw response saved to output/raw_response.json", flush=True)
-
-# Try ALL known video renderer key names
-video_keys = ["videoRenderer", "richItemRenderer", "gridVideoRenderer",
-              "compactVideoRenderer", "reelItemRenderer", "shortsLockupViewModel"]
 
 videos = []
-for key in video_keys:
-    found = find_all(data, key)
-    if found:
-        print(f"  Found {len(found)} '{key}' items", flush=True)
-        for item in found:
-            # Handle richItemRenderer wrapper
-            vr = item
-            if key == "richItemRenderer":
-                vr = (item.get("content") or {}).get("videoRenderer") or item
-            if vr and vr.get("videoId"):
-                videos.append(parse_video(vr))
+seen_ids = set()
+page = 0
 
-# Also try finding any videoId directly
-all_vid_ids = find_all(data, "videoId")
-print(f"  Total videoId fields found: {len(all_vid_ids)}", flush=True)
-for vid_id in all_vid_ids[:5]:
-    print(f"    videoId: {vid_id}", flush=True)
+# Initial request
+data = post("browse", {"context": WEB_CONTEXT, "browseId": BROWSE_ID, "params": "EgZ2aWRlb3M%3D"})
+page_vids = extract_all_videos(data)
+for v in page_vids:
+    if v["id"] not in seen_ids:
+        seen_ids.add(v["id"])
+        videos.append(v)
+print(f"  page 1: +{len(page_vids)} → total {len(videos)}", flush=True)
 
-print(f"\nExtracted {len(videos)} videos from page 1", flush=True)
+# Save raw first page for inspection
+os.makedirs("output", exist_ok=True)
+with open("output/raw_response.json","w") as f:
+    json.dump(data, f, indent=2, ensure_ascii=False)
 
 # Paginate
-page = 1
-while page < 50:
+while True:
     token = find_continuation(data)
     if not token:
-        print("No more pages", flush=True)
+        print("  no more pages", flush=True)
         break
     page += 1
     time.sleep(0.4)
-    print(f"Fetching page {page}...", flush=True)
     data = post("browse", {"context": WEB_CONTEXT, "continuation": token})
     if not data: break
-
-    new_vids = []
-    for key in video_keys:
-        for item in find_all(data, key):
-            vr = item
-            if key == "richItemRenderer":
-                vr = (item.get("content") or {}).get("videoRenderer") or item
-            if vr and vr.get("videoId"):
-                new_vids.append(parse_video(vr))
-    videos.extend(new_vids)
-    print(f"  page {page}: +{len(new_vids)} (total {len(videos)})", flush=True)
-    if not new_vids: break
+    page_vids = extract_all_videos(data)
+    new = [v for v in page_vids if v["id"] not in seen_ids]
+    for v in new:
+        seen_ids.add(v["id"])
+        videos.append(v)
+    print(f"  page {page+1}: +{len(new)} → total {len(videos)}", flush=True)
+    if not new: break
 
 result = {"channel": TARGET, "browse_id": BROWSE_ID, "count": len(videos), "videos": videos}
-with open("output/result_full.json", "w") as f:
+with open("output/result_full.json","w") as f:
     json.dump(result, f, indent=2, ensure_ascii=False)
 
 print(f"\nDONE: {len(videos)} videos", flush=True)
-for v in videos[:10]:
+for v in videos:
     print(f"  [{v.get('duration','?'):>7}]  {v.get('views','?'):>12}  {v['title']}", flush=True)
