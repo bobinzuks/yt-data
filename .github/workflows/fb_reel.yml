@@ -1,12 +1,9 @@
 name: Facebook Reel Extractor
 
 on:
-  workflow_dispatch:
-    inputs:
-      reel_url:
-        description: 'Facebook reel URL'
-        required: true
-        default: 'https://www.facebook.com/share/r/17rrQsY9XG/'
+  push:
+    paths:
+      - 'fb_target.txt'
 
 jobs:
   extract:
@@ -19,37 +16,19 @@ jobs:
       - name: Install yt-dlp
         run: pip install yt-dlp
 
-      - name: Extract reel metadata
+      - name: Extract reel
         run: |
-          URL="${{ github.event.inputs.reel_url }}"
+          URL=$(cat fb_target.txt)
           echo "Extracting: $URL"
-          yt-dlp \
-            --dump-json \
-            --no-playlist \
-            "$URL" > output/fb_reel_raw.json 2>output/fb_reel_error.txt || true
-
-          # Also get just title/description
-          yt-dlp \
-            --get-title \
-            --get-description \
-            --no-playlist \
-            "$URL" > output/fb_reel_meta.txt 2>>output/fb_reel_error.txt || true
-
-          cat output/fb_reel_error.txt
-          cat output/fb_reel_meta.txt || true
-
-      - name: Try download audio for transcription
-        run: |
-          URL="${{ github.event.inputs.reel_url }}"
-          yt-dlp \
-            -x --audio-format mp3 \
-            -o output/fb_reel_audio.mp3 \
-            --no-playlist \
-            "$URL" 2>>output/fb_reel_error.txt || echo "audio download failed"
+          yt-dlp --dump-json --no-playlist "$URL" > output/fb_reel_raw.json 2>output/fb_reel_error.txt || true
+          yt-dlp --get-title --get-description --no-playlist "$URL" > output/fb_reel_meta.txt 2>>output/fb_reel_error.txt || true
+          yt-dlp -x --audio-format mp3 -o output/fb_reel_audio.mp3 --no-playlist "$URL" 2>>output/fb_reel_error.txt || true
+          echo "=== META ===" && cat output/fb_reel_meta.txt || true
+          echo "=== ERRORS ===" && cat output/fb_reel_error.txt || true
 
       - name: Commit results
         run: |
           git config user.name "actions-bot"
           git config user.email "actions@github.com"
           git add output/
-          git diff --staged --quiet || git commit -m "fb reel extraction results" && git push
+          git diff --staged --quiet || (git commit -m "fb reel results" && git push)
