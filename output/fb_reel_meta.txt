@@ -1,0 +1,34 @@
+1.9K reactions · 172 shares | AetherCell Update: No, This Isn’t Just Wireless Power Transfer A few people asked (or assumed) that the energy in my system is just being wirelessly transmitted from the input to the pyramid — so let’s break it down: No — I’m not just sending power wirelessly to the pyramid. What I’ve built is field-assisted atmospheric energy harvesting. Here’s what’s actually happening: I’m running an 83 kHz high-voltage transformer through two dodecagram coils, creating a high-frequency electric field. That field doesn’t transmit power — it creates a pressure zone in the surrounding air. The pyramid, loaded with copper rods, sits in that field and acts like a capacitive antenna, drawing in free electrons and ions from the atmosphere. These charges build up on the rods and flow into a capacitor — generating measurable energy completely separate from the transformer’s direct output. It’s not wireless charging… It’s electrostatic stimulation of the environment — a concept even Tesla chased, but using modern materials and geometry. And no, Planck’s constant isn’t the star of the show here. While it underlies all energy quantization in nature, this system operates in the macro scale — electromagnetic field dynamics, not quantum photon exchange. This isn’t about channeling existing current — it’s about setting the stage for natural energy flow to enter the system. From air. From geometry. From the field itself. I’ll post more in the upcoming videos— stay tuned and stay curious. #fyp #like #share #follow #tesla | Resonate369
+AetherCell Update: No, This Isn’t Just Wireless Power Transfer
+
+A few people asked (or assumed) that the energy in my system is just being wirelessly transmitted from the input to the pyramid — so let’s break it down:
+
+No — I’m not just sending power wirelessly to the pyramid.
+What I’ve built is field-assisted atmospheric energy harvesting.
+
+Here’s what’s actually happening:
+
+I’m running an 83 kHz high-voltage transformer through two dodecagram coils, creating a high-frequency electric field.
+
+That field doesn’t transmit power — it creates a pressure zone in the surrounding air.
+
+The pyramid, loaded with copper rods, sits in that field and acts like a capacitive antenna, drawing in free electrons and ions from the atmosphere.
+
+These charges build up on the rods and flow into a capacitor — generating measurable energy completely separate from the transformer’s direct output.
+
+It’s not wireless charging…
+It’s electrostatic stimulation of the environment — a concept even Tesla chased, but using modern materials and geometry.
+
+And no, Planck’s constant isn’t the star of the show here.
+While it underlies all energy quantization in nature, this system operates in the macro scale — electromagnetic field dynamics, not quantum photon exchange.
+
+This isn’t about channeling existing current — it’s about setting the stage for natural energy flow to enter the system.
+
+From air. From geometry. From the field itself.
+
+I’ll post more in the upcoming videos— stay tuned and stay curious.
+#fyp
+#like
+#share
+#follow
+#tesla
