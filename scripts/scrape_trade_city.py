@@ -206,14 +206,34 @@ def scrape_yellowpages(session, trade, city, budget, start_page=1) -> list[str]:
         if not listings:
             print(f"  No listings found on page {page}, stopping YP pagination.")
             break
+        page_domains = 0
         for listing in listings:
-            link = listing.select_one("a.listing__link--website, a[data-analytics='website']")
-            if not link:
-                continue
-            href = link.get("href", "")
-            domain = _extract_domain(href)
-            if domain and domain not in domains:
-                domains.append(domain)
+            # Method 1: mlr__item__cta with "Website" text (most common)
+            for link in listing.select("a.mlr__item__cta"):
+                text = link.get_text(strip=True).lower()
+                if text == "website":
+                    href = link.get("href", "")
+                    # Extract redirect URL from /gourl/...?redirect=URL
+                    if "redirect=" in href:
+                        from urllib.parse import unquote, parse_qs, urlparse as _up
+                        qs = parse_qs(_up(href).query)
+                        if "redirect" in qs:
+                            href = unquote(qs["redirect"][0])
+                    domain = _extract_domain(href)
+                    if domain and domain not in domains:
+                        domains.append(domain)
+                        page_domains += 1
+                    break
+            # Method 2: ptl class booking/website links
+            if not page_domains:
+                for link in listing.select("a.ptl"):
+                    href = link.get("href", "")
+                    domain = _extract_domain(href)
+                    if domain and domain not in domains:
+                        domains.append(domain)
+                        page_domains += 1
+                        break
+        print(f"  Page {page}: {page_domains} new domains (total: {len(domains)})")
         _random_delay()
     return domains
 
