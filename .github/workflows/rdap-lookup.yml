@@ -1,0 +1,252 @@
+name: RDAP Email Lookup by Province (Matrix)
+
+on:
+  workflow_dispatch:
+    inputs:
+      province:
+        description: "Province to look up (BC, ON, or ALL)"
+        required: true
+        default: "ALL"
+        type: choice
+        options:
+          - BC
+          - ON
+          - ALL
+      batch_size:
+        description: "Number of companies per job"
+        required: false
+        default: "500"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  rdap-lookup:
+    name: "RDAP ${{ matrix.province }} batch-${{ matrix.batch }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    concurrency:
+      group: rdap-${{ matrix.province }}-${{ matrix.batch }}
+      cancel-in-progress: false
+
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        batch: [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500]
+        province: [BC, ON]
+        exclude:
+          # When a specific province is selected, exclude the other one
+          - province: ${{ github.event.inputs.province == 'ON' && 'BC' || 'NONE' }}
+          - province: ${{ github.event.inputs.province == 'BC' && 'ON' || 'NONE' }}
+
+    steps:
+      - name: Filter province
+        id: filter
+        run: |
+          INPUT_PROVINCE="${{ github.event.inputs.province }}"
+          MATRIX_PROVINCE="${{ matrix.province }}"
+
+          SKIP="false"
+          if [[ "${INPUT_PROVINCE}" != "ALL" && "${INPUT_PROVINCE}" != "${MATRIX_PROVINCE}" ]]; then
+            SKIP="true"
+          fi
+          echo "skip=${SKIP}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        if: steps.filter.outputs.skip == 'false'
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Setup Python 3.11
+        if: steps.filter.outputs.skip == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.filter.outputs.skip == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Create results directory
+        if: steps.filter.outputs.skip == 'false'
+        run: mkdir -p results
+
+      - name: Run RDAP lookup
+        if: steps.filter.outputs.skip == 'false'
+        run: |
+          python scripts/rdap_lookup.py \
+            --all \
+            --province "${{ matrix.province }}" \
+            --offset "${{ matrix.batch }}" \
+            --limit ${{ github.event.inputs.batch_size || '500' }} \
+            --output "results/rdap_${{ matrix.province }}_${{ matrix.batch }}.csv"
+        timeout-minutes: 25
+
+      - name: Commit and push results
+        if: steps.filter.outputs.skip == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          RESULT_FILE="results/rdap_${{ matrix.province }}_${{ matrix.batch }}.csv"
+
+          if [[ ! -f "${RESULT_FILE}" ]]; then
+            echo "No results file produced, skipping commit."
+            exit 0
+          fi
+
+          ROW_COUNT=$(wc -l < "${RESULT_FILE}")
+          if [[ "${ROW_COUNT}" -le 1 ]]; then
+            echo "Results file is empty (header only), skipping commit."
+            exit 0
+          fi
+
+          git add "${RESULT_FILE}"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "rdap: ${{ matrix.province }} batch ${{ matrix.batch }} [${TIMESTAMP}] - $((ROW_COUNT - 1)) lookups"
+
+          # Retry push up to 5 times to handle concurrent push conflicts
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying in $((attempt * 2))s..."
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload results artifact
+        if: steps.filter.outputs.skip == 'false' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "rdap-${{ matrix.province }}-${{ matrix.batch }}"
+          path: "results/rdap_${{ matrix.province }}_${{ matrix.batch }}.csv"
+          retention-days: 30
+          if-no-files-found: ignore
+
+  aggregate:
+    name: Aggregate RDAP results
+    needs: rdap-lookup
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-results
+          pattern: "rdap-*"
+          merge-multiple: true
+
+      - name: Merge and deduplicate CSVs
+        run: |
+          mkdir -p results
+
+          if ! ls downloaded-results/*.csv 1>/dev/null 2>&1; then
+            echo "No CSV files found to aggregate."
+            exit 0
+          fi
+
+          # Copy individual results
+          cp downloaded-results/*.csv results/
+
+          python3 << 'PYEOF'
+          import csv
+          import glob
+          import os
+
+          csv_files = sorted(glob.glob("results/rdap_*.csv"))
+          if not csv_files:
+              print("No RDAP CSV files found.")
+              exit(0)
+
+          seen_emails = set()
+          rows = []
+          header = None
+
+          for fpath in csv_files:
+              with open(fpath, newline="", encoding="utf-8") as f:
+                  reader = csv.reader(f)
+                  file_header = next(reader, None)
+                  if file_header is None:
+                      continue
+                  if header is None:
+                      header = file_header
+                      # Find email column index
+                      email_col = None
+                      for i, col in enumerate(header):
+                          if col.lower().strip() in ("email", "e-mail", "contact_email"):
+                              email_col = i
+                              break
+                  for row in reader:
+                      if email_col is not None and email_col < len(row):
+                          email = row[email_col].strip().lower()
+                          if email and email in seen_emails:
+                              continue
+                          if email:
+                              seen_emails.add(email)
+                      rows.append(row)
+
+          outpath = "results/rdap_all_leads.csv"
+          with open(outpath, "w", newline="", encoding="utf-8") as f:
+              writer = csv.writer(f)
+              if header:
+                  writer.writerow(header)
+              writer.writerows(rows)
+
+          print(f"Total unique leads: {len(rows)}")
+          print(f"Duplicates removed: deduplicated by email column")
+          PYEOF
+
+      - name: Commit aggregated results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add results/
+
+          if git diff --cached --quiet; then
+            echo "No new aggregated results to commit."
+            exit 0
+          fi
+
+          TOTAL=0
+          if [[ -f results/rdap_all_leads.csv ]]; then
+            TOTAL=$(( $(wc -l < results/rdap_all_leads.csv) - 1 ))
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "rdap: aggregate ${TOTAL} unique leads [${TIMESTAMP}]"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            sleep $((attempt * 2))
+          done
