@@ -40,7 +40,7 @@ jobs:
     timeout-minutes: 30
 
     concurrency:
-      group: scrape-${{ matrix.trade }}
+      group: scrape-${{ matrix.trade }}-${{ matrix.city }}
       cancel-in-progress: false
 
     strategy:
