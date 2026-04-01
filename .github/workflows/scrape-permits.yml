@@ -1,0 +1,307 @@
+name: Scrape BC Building Permits for Contractor Emails
+
+on:
+  workflow_dispatch:
+    inputs:
+      city_override:
+        description: "Override city (leave empty for full matrix)"
+        required: false
+        default: ""
+        type: string
+  push:
+    branches:
+      - trigger-permits
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-permits:
+    name: "permits - ${{ matrix.city }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    concurrency:
+      group: permits-${{ matrix.city }}
+      cancel-in-progress: false
+
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        city:
+          - vancouver
+          - surrey
+          - burnaby
+          - victoria
+          - kelowna
+          - abbotsford
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Check for city override
+        id: check-override
+        run: |
+          SKIP="false"
+          if [[ -n "${{ github.event.inputs.city_override }}" && "${{ matrix.city }}" != "${{ github.event.inputs.city_override }}" ]]; then
+            SKIP="true"
+          fi
+          echo "skip=${SKIP}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Python 3.11
+        if: steps.check-override.outputs.skip == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.check-override.outputs.skip == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 lxml
+
+      - name: Create results directory
+        if: steps.check-override.outputs.skip == 'false'
+        run: mkdir -p results
+
+      - name: Run permit scraper
+        if: steps.check-override.outputs.skip == 'false'
+        run: |
+          python scripts/scrape_permits.py \
+            --city "${{ matrix.city }}" \
+            --trade all \
+            --output "results/permits_${{ matrix.city }}.csv" \
+            --limit 5000
+        timeout-minutes: 40
+
+      - name: Commit and push results
+        if: steps.check-override.outputs.skip == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          RESULT_FILE="results/permits_${{ matrix.city }}.csv"
+
+          if [[ ! -f "${RESULT_FILE}" ]]; then
+            echo "No results file produced, skipping commit."
+            exit 0
+          fi
+
+          ROW_COUNT=$(wc -l < "${RESULT_FILE}")
+          if [[ "${ROW_COUNT}" -le 1 ]]; then
+            echo "Results file is empty (header only), skipping commit."
+            exit 0
+          fi
+
+          git add "${RESULT_FILE}"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "permits: ${{ matrix.city }} [${TIMESTAMP}] - $((ROW_COUNT - 1)) leads"
+
+          # Retry push up to 5 times to handle concurrent push conflicts
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying in $((attempt * 2))s..."
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload results artifact
+        if: steps.check-override.outputs.skip == 'false' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "permits-${{ matrix.city }}"
+          path: "results/permits_${{ matrix.city }}.csv"
+          retention-days: 30
+          if-no-files-found: ignore
+
+  aggregate:
+    name: Aggregate permit results
+    needs: scrape-permits
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Pull latest results
+        run: |
+          git pull origin "${GITHUB_REF_NAME}" || true
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-permits
+          pattern: "permits-*"
+          merge-multiple: true
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Merge and deduplicate permit CSVs
+        run: |
+          mkdir -p results
+
+          if ! ls downloaded-permits/*.csv 1>/dev/null 2>&1; then
+            echo "No CSV files found to aggregate."
+            exit 0
+          fi
+
+          # Copy individual results into results/
+          cp downloaded-permits/*.csv results/
+
+          python3 << 'PYEOF'
+          import csv
+          import os
+          import sys
+
+          # -------------------------------------------------------
+          # 1. Merge all permit CSVs into one, deduplicating by
+          #    (company_name, email) pair.
+          # -------------------------------------------------------
+          permit_files = sorted(
+              f for f in os.listdir("results")
+              if f.startswith("permits_") and f.endswith(".csv")
+          )
+
+          if not permit_files:
+              print("No permit CSV files to merge.")
+              sys.exit(0)
+
+          header = None
+          rows = []
+          seen = set()
+
+          for fname in permit_files:
+              path = os.path.join("results", fname)
+              with open(path, newline="", encoding="utf-8") as fh:
+                  reader = csv.reader(fh)
+                  file_header = next(reader, None)
+                  if file_header is None:
+                      continue
+                  if header is None:
+                      header = file_header
+                  for row in reader:
+                      # Build dedup key from company_name + email columns.
+                      # Attempt to find columns by name; fall back to first two.
+                      if header:
+                          col_map = {c.strip().lower(): i for i, c in enumerate(header)}
+                          company_idx = col_map.get("company_name", col_map.get("company", 0))
+                          email_idx = col_map.get("email", min(1, len(row) - 1))
+                      else:
+                          company_idx, email_idx = 0, 1
+
+                      key = (
+                          row[company_idx].strip().lower() if company_idx < len(row) else "",
+                          row[email_idx].strip().lower() if email_idx < len(row) else "",
+                      )
+                      if key not in seen:
+                          seen.add(key)
+                          rows.append(row)
+
+          # Write merged permit leads
+          merged_path = os.path.join("results", "all_permit_leads.csv")
+          with open(merged_path, "w", newline="", encoding="utf-8") as fh:
+              writer = csv.writer(fh)
+              if header:
+                  writer.writerow(header)
+              writer.writerows(rows)
+
+          print(f"Merged {len(rows)} unique permit leads into {merged_path}")
+
+          # -------------------------------------------------------
+          # 2. Cross-reference against the trade scraper leads file
+          #    (results/all_leads.csv) and mark overlaps.
+          # -------------------------------------------------------
+          trade_leads_path = os.path.join("results", "all_leads.csv")
+          trade_emails = set()
+
+          if os.path.isfile(trade_leads_path):
+              with open(trade_leads_path, newline="", encoding="utf-8") as fh:
+                  reader = csv.reader(fh)
+                  trade_header = next(reader, None)
+                  if trade_header:
+                      t_col_map = {c.strip().lower(): i for i, c in enumerate(trade_header)}
+                      t_email_idx = t_col_map.get("email", min(1, len(trade_header) - 1))
+                      for row in reader:
+                          if t_email_idx < len(row) and row[t_email_idx].strip():
+                              trade_emails.add(row[t_email_idx].strip().lower())
+
+          if trade_emails and header:
+              # Re-read merged file and append an overlap column
+              with open(merged_path, newline="", encoding="utf-8") as fh:
+                  reader = csv.reader(fh)
+                  m_header = next(reader)
+                  m_rows = list(reader)
+
+              col_map = {c.strip().lower(): i for i, c in enumerate(m_header)}
+              m_email_idx = col_map.get("email", min(1, len(m_header) - 1))
+
+              m_header.append("in_trade_leads")
+              overlap_count = 0
+              for row in m_rows:
+                  email_val = row[m_email_idx].strip().lower() if m_email_idx < len(row) else ""
+                  is_overlap = email_val in trade_emails
+                  row.append("yes" if is_overlap else "no")
+                  if is_overlap:
+                      overlap_count += 1
+
+              with open(merged_path, "w", newline="", encoding="utf-8") as fh:
+                  writer = csv.writer(fh)
+                  writer.writerow(m_header)
+                  writer.writerows(m_rows)
+
+              print(f"Cross-referenced: {overlap_count} overlapping emails with trade leads")
+          else:
+              print("No trade leads file found or no header; skipping cross-reference.")
+
+          PYEOF
+
+      - name: Commit aggregated results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add results/
+
+          if git diff --cached --quiet; then
+            echo "No new aggregated results to commit."
+            exit 0
+          fi
+
+          TOTAL=0
+          if [[ -f results/all_permit_leads.csv ]]; then
+            TOTAL=$(( $(wc -l < results/all_permit_leads.csv) - 1 ))
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "permits: aggregate ${TOTAL} unique permit leads [${TIMESTAMP}]"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying in $((attempt * 2))s..."
+            sleep $((attempt * 2))
+          done
