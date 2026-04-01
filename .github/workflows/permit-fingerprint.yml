@@ -1,0 +1,474 @@
+name: Permit Fingerprint Cross-Reference Engine
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Contractor registry source"
+        required: true
+        type: choice
+        options:
+          - ontario
+          - victoria
+          - vancouver
+      batch_start:
+        description: "Offset to start from"
+        required: false
+        default: "0"
+        type: string
+      batch_size:
+        description: "Contractors per job"
+        required: false
+        default: "200"
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  USER_AGENTS: |
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+    Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0
+    Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+    Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0
+    Mozilla/5.0 (Macintosh; Intel Mac OS X 14.3; rv:123.0) Gecko/20100101 Firefox/123.0
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0
+    Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+
+jobs:
+  fingerprint:
+    name: "Batch ${{ matrix.batch }} - ${{ inputs.source }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    concurrency:
+      group: fingerprint-${{ inputs.source }}-${{ matrix.batch }}
+      cancel-in-progress: false
+
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        batch: [0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800]
+
+    steps:
+      - name: Check if batch is within requested range
+        id: check-range
+        run: |
+          BATCH=${{ matrix.batch }}
+          START=${{ inputs.batch_start || '0' }}
+          SIZE=${{ inputs.batch_size || '200' }}
+          # Skip batches below the requested start offset
+          if [[ "${BATCH}" -lt "${START}" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "batch_size=${SIZE}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        if: steps.check-range.outputs.skip == 'false'
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Setup Python 3.11
+        if: steps.check-range.outputs.skip == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.check-range.outputs.skip == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests dnspython beautifulsoup4 lxml
+
+      - name: Select user agent
+        if: steps.check-range.outputs.skip == 'false'
+        id: ua
+        run: |
+          readarray -t UA_LIST <<< "$USER_AGENTS"
+          HASH=$(echo -n "${{ inputs.source }}-${{ matrix.batch }}" | md5sum | cut -c1-8)
+          INDEX=$(( 16#${HASH} % ${#UA_LIST[@]} ))
+          SELECTED_UA="${UA_LIST[$INDEX]}"
+          echo "user_agent=${SELECTED_UA}" >> "$GITHUB_OUTPUT"
+          echo "Selected UA index ${INDEX}: ${SELECTED_UA}"
+
+      - name: Create results directory
+        if: steps.check-range.outputs.skip == 'false'
+        run: mkdir -p results
+
+      - name: Verify input CSV exists
+        if: steps.check-range.outputs.skip == 'false'
+        run: |
+          INPUT_FILE="data/${{ inputs.source }}-registries.csv"
+          if [[ ! -f "${INPUT_FILE}" ]]; then
+            echo "::error::Input file not found: ${INPUT_FILE}"
+            exit 1
+          fi
+          TOTAL_ROWS=$(( $(wc -l < "${INPUT_FILE}") - 1 ))
+          echo "Input file has ${TOTAL_ROWS} contractor rows"
+
+      - name: Run permit fingerprint engine
+        if: steps.check-range.outputs.skip == 'false'
+        env:
+          SCRAPER_USER_AGENT: ${{ steps.ua.outputs.user_agent }}
+        run: |
+          python scripts/permit_fingerprint.py \
+            --input "data/${{ inputs.source }}-registries.csv" \
+            --limit ${{ steps.check-range.outputs.batch_size }} \
+            --offset ${{ matrix.batch }} \
+            --output "results/fingerprints_${{ inputs.source }}_${{ matrix.batch }}.csv"
+        timeout-minutes: 25
+
+      - name: Commit and push results
+        if: steps.check-range.outputs.skip == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          RESULT_FILE="results/fingerprints_${{ inputs.source }}_${{ matrix.batch }}.csv"
+
+          if [[ ! -f "${RESULT_FILE}" ]]; then
+            echo "No results file produced, skipping commit."
+            exit 0
+          fi
+
+          ROW_COUNT=$(wc -l < "${RESULT_FILE}")
+          if [[ "${ROW_COUNT}" -le 1 ]]; then
+            echo "Results file is empty (header only), skipping commit."
+            exit 0
+          fi
+
+          git add "${RESULT_FILE}"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "fingerprint: ${{ inputs.source }} batch ${{ matrix.batch }} [${TIMESTAMP}] - $((ROW_COUNT - 1)) matches"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying in $((attempt * 2))s..."
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload results artifact
+        if: steps.check-range.outputs.skip == 'false' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "fingerprints-${{ inputs.source }}-${{ matrix.batch }}"
+          path: "results/fingerprints_${{ inputs.source }}_${{ matrix.batch }}.csv"
+          retention-days: 30
+          if-no-files-found: ignore
+
+  aggregate:
+    name: Aggregate fingerprints
+    needs: fingerprint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-results
+          pattern: "fingerprints-*"
+          merge-multiple: true
+
+      - name: Merge and deduplicate CSVs
+        run: |
+          mkdir -p results
+
+          if ! ls downloaded-results/*.csv 1>/dev/null 2>&1; then
+            echo "No CSV files found to aggregate."
+            exit 0
+          fi
+
+          cp downloaded-results/*.csv results/
+
+          python3 << 'PYEOF'
+          import csv
+          import glob
+          import os
+
+          source = "${{ inputs.source }}"
+          csv_files = sorted(glob.glob("results/fingerprints_*.csv"))
+
+          if not csv_files:
+              print("No fingerprint CSVs found.")
+              exit(0)
+
+          # Read all rows, deduplicate by email
+          seen_emails = set()
+          all_rows = []
+          header = None
+
+          for f in csv_files:
+              with open(f, "r", newline="", encoding="utf-8") as fh:
+                  reader = csv.DictReader(fh)
+                  if header is None:
+                      header = reader.fieldnames
+                  for row in reader:
+                      email = row.get("email", "").strip().lower()
+                      if email and email not in seen_emails:
+                          seen_emails.add(email)
+                          all_rows.append(row)
+
+          output_path = f"results/all_fingerprints_{source}.csv"
+          if header and all_rows:
+              with open(output_path, "w", newline="", encoding="utf-8") as fh:
+                  writer = csv.DictWriter(fh, fieldnames=header)
+                  writer.writeheader()
+                  writer.writerows(all_rows)
+              print(f"Aggregated {len(all_rows)} unique contacts (deduplicated by email)")
+          else:
+              print("No rows to aggregate.")
+          PYEOF
+
+      - name: Commit aggregated results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add results/
+
+          if git diff --cached --quiet; then
+            echo "No new aggregated results to commit."
+            exit 0
+          fi
+
+          SOURCE="${{ inputs.source }}"
+          MERGED_FILE="results/all_fingerprints_${SOURCE}.csv"
+          TOTAL=0
+          if [[ -f "${MERGED_FILE}" ]]; then
+            TOTAL=$(( $(wc -l < "${MERGED_FILE}") - 1 ))
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "fingerprint: aggregate ${SOURCE} - ${TOTAL} unique contacts [${TIMESTAMP}]"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload merged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "fingerprints-${{ inputs.source }}-merged"
+          path: "results/all_fingerprints_${{ inputs.source }}.csv"
+          retention-days: 30
+          if-no-files-found: ignore
+
+  smtp-verify:
+    name: SMTP verify discovered emails
+    needs: aggregate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: always() && needs.aggregate.result == 'success'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Pull latest (aggregate may have pushed)
+        run: git pull --rebase origin "${GITHUB_REF_NAME}" || true
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install dnspython
+
+      - name: Download merged artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: "fingerprints-${{ inputs.source }}-merged"
+          path: downloaded-merged
+
+      - name: SMTP verify emails (port 25)
+        run: |
+          mkdir -p results
+
+          python3 << 'PYEOF'
+          import csv
+          import dns.resolver
+          import smtplib
+          import socket
+          import sys
+          import time
+
+          SOURCE = "${{ inputs.source }}"
+          INPUT_FILE = f"downloaded-merged/all_fingerprints_{SOURCE}.csv"
+          OUTPUT_FILE = f"results/verified_emails_{SOURCE}.csv"
+
+          def get_mx_host(domain):
+              """Resolve the primary MX record for a domain."""
+              try:
+                  answers = dns.resolver.resolve(domain, "MX")
+                  mx_records = sorted(answers, key=lambda r: r.preference)
+                  return str(mx_records[0].exchange).rstrip(".")
+              except Exception:
+                  return None
+
+          def smtp_verify(email, mx_host, timeout=10):
+              """
+              Verify an email address via SMTP RCPT TO.
+              Returns: 'valid', 'invalid', 'catch_all', or 'error'
+              """
+              try:
+                  with smtplib.SMTP(timeout=timeout) as smtp:
+                      smtp.connect(mx_host, 25)
+                      smtp.helo("verify.local")
+                      smtp.mail("verify@verify.local")
+                      code, _ = smtp.rcpt(email)
+                      if code == 250:
+                          return "valid"
+                      elif code == 550:
+                          return "invalid"
+                      else:
+                          return f"code_{code}"
+              except smtplib.SMTPServerDisconnected:
+                  return "disconnected"
+              except socket.timeout:
+                  return "timeout"
+              except Exception as e:
+                  return f"error:{type(e).__name__}"
+
+          # Read emails from merged CSV
+          try:
+              with open(INPUT_FILE, "r", newline="", encoding="utf-8") as fh:
+                  reader = csv.DictReader(fh)
+                  rows = list(reader)
+                  fieldnames = reader.fieldnames
+          except FileNotFoundError:
+              print(f"Merged file not found: {INPUT_FILE}")
+              sys.exit(0)
+
+          if not rows:
+              print("No rows to verify.")
+              sys.exit(0)
+
+          # Add verification columns
+          out_fields = list(fieldnames) + ["smtp_status", "mx_host"]
+          mx_cache = {}
+          verified_rows = []
+
+          print(f"Verifying {len(rows)} emails via SMTP (port 25)...")
+
+          for i, row in enumerate(rows):
+              email = row.get("email", "").strip().lower()
+              if not email or "@" not in email:
+                  row["smtp_status"] = "invalid_format"
+                  row["mx_host"] = ""
+                  verified_rows.append(row)
+                  continue
+
+              domain = email.split("@")[1]
+
+              if domain not in mx_cache:
+                  mx_cache[domain] = get_mx_host(domain)
+
+              mx_host = mx_cache[domain]
+              if not mx_host:
+                  row["smtp_status"] = "no_mx"
+                  row["mx_host"] = ""
+                  verified_rows.append(row)
+                  continue
+
+              status = smtp_verify(email, mx_host)
+              row["smtp_status"] = status
+              row["mx_host"] = mx_host
+              verified_rows.append(row)
+
+              if (i + 1) % 50 == 0:
+                  print(f"  Verified {i + 1}/{len(rows)}...")
+
+              # Rate limit: small delay between checks to avoid blocks
+              time.sleep(0.5)
+
+          # Write output
+          with open(OUTPUT_FILE, "w", newline="", encoding="utf-8") as fh:
+              writer = csv.DictWriter(fh, fieldnames=out_fields, extrasaction="ignore")
+              writer.writeheader()
+              writer.writerows(verified_rows)
+
+          valid_count = sum(1 for r in verified_rows if r["smtp_status"] == "valid")
+          print(f"SMTP verification complete: {valid_count}/{len(verified_rows)} valid")
+          PYEOF
+
+      - name: Commit verified results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          SOURCE="${{ inputs.source }}"
+          RESULT_FILE="results/verified_emails_${SOURCE}.csv"
+
+          if [[ ! -f "${RESULT_FILE}" ]]; then
+            echo "No verified results file, skipping commit."
+            exit 0
+          fi
+
+          git add "${RESULT_FILE}"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TOTAL=$(( $(wc -l < "${RESULT_FILE}") - 1 ))
+          VALID=$(tail -n +2 "${RESULT_FILE}" | grep -c ',valid,' || true)
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "fingerprint: SMTP verified ${SOURCE} - ${VALID}/${TOTAL} valid [${TIMESTAMP}]"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload verified artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "verified-emails-${{ inputs.source }}"
+          path: "results/verified_emails_${{ inputs.source }}.csv"
+          retention-days: 30
+          if-no-files-found: ignore
