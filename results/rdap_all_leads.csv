@@ -1,0 +1,696 @@
+company_name,domain,rdap_email,registrant_name,match_score,tier,trade,city,province
+# 1 Painting,1painting.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.1,tier3,Painting Contractors,New Westminster,BC
+'It's On' Electric Company Incorporated,itsonelectric.com,domain.operations@web.com,"Network Solutions, LLC",0.273,tier3,Electrician,Surrey,BC
+123 Mechanical,123mechanical.com,abuse@bluehost.com,Launchpad.com Inc.,0.308,tier3,Plumbing and Heating,Burnaby,BC
+2 Bros Construction Ltd,2brosconstruction.com,domain-abuse@wix.com,Wix.com Ltd.,0.16,tier3,General Contractor,Abbotsford,BC
+2 Honest Carpenter Ltd.,2honestcarpenter.com,abuse@namespro.ca,Namespro Solutions Inc.,0.308,tier3,Home Improvement,Richmond,BC
+2000 Plus Insulation Ltd,2000plusinsulation.com,abuse@enom.com,"eNom, LLC",0.167,tier3,Insulation Contractors,Vancouver,BC
+22 Construction,22construction.com,abuse@namecheap.com,"NameCheap, Inc.",0.083,tier3,Home Improvement,Surrey,BC
+24 Construction Inc,24-construction.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.25,tier3,General Contractor,Richmond,BC
+2M Electrical Services,2melectrical.com,abuse@bigrock.com,BigRock Solutions Ltd,0.1,tier3,Electrical Contractors,Burnaby,BC
+2byfour Concrete Ltd.,2byfourconcrete.com,domainabuse@tucows.com,Tucows Domains Inc.,0.267,tier3,Concrete Contractors,Langley,BC
+2nd Coat Painting Inc,2ndcoatpainting.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.244,tier3,Painting Contractors,Chilliwack,BC
+33 Vastu Construction,33vastuconstruction.com,abuse@gkg.net,"GKG.Net, Inc.",0.074,tier3,General Contractor,Maple Ridge,BC
+3D Construction Ltd.,3d-construction.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.276,tier3,General Contractor,Langley,BC
+3D Electrical Services,3d-electrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.2,tier3,Electrician,Duncan,BC
+3G Mechanical Services Inc.,3gmechanical.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.286,tier3,Mechanical Contractors,Langley,BC
+3S Electric,3s-electric.com,supervision@xinnet.com,Xin Net Technology Corporation,0.276,tier3,Electrician,Surrey,BC
+3p Painting,3ppainting.com,registry-abuse@nexigen.digital,Synergy Wholesale Accreditations Pty Ltd,0.128,tier3,Painting Contractors,Langley,BC
+4-S Consulting Services,4-s.com,abuse@dynadot.com,Dynadot Inc,0.0,tier3,Home Builders,Delta,BC
+49 North Enterprises,49north.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.222,tier3,Construction Services,Black Creek,BC
+4TR CONTRACTING,4tr.com,DomainAbuse@service.aliyun.com,"Alibaba Cloud Computing (Beijing) Co., Ltd.",0.059,tier3,General Contractor,Kamloops,BC
+5K Construction Ltd.,5kconstruction.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.293,tier3,Home Builders,Surrey,BC
+88 Homes Ltd,88homes.com,abuse@namesilo.com,"NameSilo, LLC",0.375,tier3,Home Builders,Vancouver,BC
+A & A Construction Ltd,aaconstruction.com,abuse@epik.com,Epik LLC,0.1,tier3,Building Contractors,Vancouver,BC
+A & B Paving Co. Ltd.,abpaving.com,billing@registermatrix.com,"Media Elite Holdings Limited, S.A.",0.333,tier3,Paving Contractors,Burnaby,BC
+A & W Contracting,a-w.com,abuse@united-domains.de,united-domains GmbH,0.182,tier3,Building Contractors,Chilliwack,BC
+A B C Cleaning Services,abccleaning.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.372,tier3,Cleaning Services,Surrey,BC
+A B C Painting Ltd,abcpainting.com,abuse-contact@sav.com,"Sav.com, LLC",0.2,tier3,Painting Contractors,Surrey,BC
+A Finer Line Services Inc.,afinerline.com,abuse@ionos.com,IONOS SE,0.2,tier3,Painting Contractors,Victoria,BC
+A N B Painting,anbpainting.com,abuse@name.com,"Name.com, Inc.",0.095,tier3,Painting Contractors,Surrey,BC
+A New Look,anewlook.com,abuse@fabulous.com,"Sea Wasp, LLC",0.333,tier3,General Contractor,Port Moody,BC
+A R Enterprises,a-r.com,domain-abuse@internetx.com,InterNetX GmbH,0.118,tier3,Electrician,Gibsons,BC
+A Tech Services,atech.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.235,tier3,Painting Contractors,Burnaby,BC
+Working Hands Construction,workinghandsconstruction.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.278,tier3,Construction,Kelowna,BC
+Wolverine Industries,wolverineindustries.com,domainabuse@tucows.com,Tucows Domains Inc.,0.294,tier3,Home Improvement,Kelowna,BC
+Wiring Solutions Electrical Services,wiringelectrical.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.186,tier3,Electrician,Chase,BC
+Wirepro Electric Inc,wirepro-electric.com,abuse@ionos.com,IONOS SE,0.167,tier3,Electrician,Surrey,BC
+Wintergreen Electric,wintergreenelectric.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.19,tier3,Electrical Contractors,Abbotsford,BC
+Wilshire Construction,wilshireconstruction.com,domain.operations@web.com,"Network Solutions, LLC",0.143,tier3,General Contractor,Abbotsford,BC
+Willow Spring Construction,willowspringconstruction.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.238,tier3,General Contractor,Surrey,BC
+Willow Development Inc,willow-development.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.286,tier3,Home Renovation,West Kelowna,BC
+Wilkins Construction Ltd,wilkins-construction.com,abuse@bluehost.com,Launchpad.com Inc.,0.25,tier3,General Contractor,Vernon,BC
+Wiley Roofing,wileyroofing.com,abuse@dynadot.com,Dynadot9266 LLC,0.167,tier3,Roofing Contractors,Langley,BC
+Wightman Mechanical,wightmanmechanical.com,abuse@easydns.com,easyDNS Technologies Inc.,0.308,tier3,Water Heater Dealers,Kelowna,BC
+Whitetail Concrete Inc,whitetailconcrete.com,abuse@namecheap.com,"NameCheap, Inc.",0.222,tier3,Concrete Contractors,Kelowna,BC
+White Rock Renovations,whiterockrenovations.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.478,tier3,General Contractor,Surrey,BC
+Westport Mechanical Ltd,westportmechanical.com,abuse@rebel.com,Rebel.ca Corp.,0.308,tier3,Commercial Air Conditioning Contractors,Coquitlam,BC
+Western Star Contracting Ltd,westernstar.com,abuse@key-systems.net,Key-Systems GmbH,0.357,tier3,General Contractor,Aldergrove,BC
+Western Insulation Ltd.,westerninsulation.com,abuse@enom.com,"eNom, LLC",0.273,tier3,Insulation Contractors,Surrey,BC
+Torbram Electric,torbramelectric.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.324,tier3,Electrician,Kelowna,BC
+Jade Electric Ltd,jade-electric.com,abuse@domainoriental.com,DOMAIN ORIENTAL LIMITED,0.286,tier3,Electrician,Kelowna,BC
+Vitatek Solutions,vitatek.com,abuse@cloudns.net,Cloud DNS Ltd,0.0,tier3,Cleaning Services,Kelowna,BC
+JK Commercial Cleaning Services,jkcommercialcleaning.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.293,tier3,Cleaning Services,Kelowna,BC
+Technical Safety BC,technicalsafetybc.com,abuse@dotalliance.com,DotAlliance Inc.,0.333,tier3,Electrical Contractors,Kelowna,BC
+TI Roof Rescue Inc.,tiroofrescue.com,abuse@register.ca,Register.ca Inc.,0.333,tier3,Roofing Contractors,Kelowna,BC
+Falcon Engineering Ltd,falcon-engineering.com,abuse@ordertld.com,CNOBIN INFORMATION TECHNOLOGY LIMITED,0.34,tier3,General Engineering Contractor,Kelowna,BC
+Regent Construction,regent-construction.com,abuse@one.com,One.com A/S,0.286,tier3,General Contractor,Kelowna,BC
+Accent Renovations,accentrenovations.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.286,tier3,Home Improvement,Kelowna,BC
+Prehofer Enterprise Ltd,prehofer.com,abuse@ascio.com,"Ascio Technologies, Inc. Danmark - Filial af Ascio technologies, Inc. USA",0.145,tier3,Plumber,Kelowna,BC
+R & R Electric Ltd.,r-r-electric.com,abuse@registrar.eu,Hosting Concepts B.V. d/b/a Registrar.eu,0.213,tier3,Electrician,Kamloops,BC
+Oswell Construction Ltd,oswellconstruction.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.207,tier3,Home Improvement,Kamloops,BC
+Polytech Foam Solutions Inc.,polytechfoam.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.308,tier3,Spray Foam Insulation Contractors,Kamloops,BC
+Skull Mountain Contracting,skull-mountain.com,abuse@123-reg.co.uk,123-Reg Limited,0.0,tier3,General Contractor,Kamloops,BC
+CBT Mechanical Inc.,cbtmechanical.com,abuse@enom.com,"eNom, LLC",0.111,tier3,Mechanical Contractors,Kamloops,BC
+Sunset Landscaping,sunset-landscaping.com,abuse@namecheap.com,"NameCheap, Inc.",0.37,tier3,Landscape Contractors,Kamloops,BC
+Centrecore HVAC Services,centrecorehvac.com,domainabuse@tucows.com,Tucows Domains Inc.,0.345,tier3,Heating and Air Conditioning,Kamloops,BC
+Concrete Solutions,concrete.com,domain.operations@web.com,"Network Solutions, LLC",0.4,tier3,Concrete Contractors,Kamloops,BC
+Ocean Cleaning Company Ltd,oceancleaning.com,abuse@hosting.kr,"Megazone Corp., dba HOSTING.KR",0.375,tier3,Cleaning Services,Kamloops,BC
+All Service Plumbing & Heating,allplumbingheating.com,abuse@dynadot.com,Dynadot Inc,0.148,tier3,Plumber,Quesnel,BC
+Altrad Contracting,altrad.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.222,tier3,General Contractor,Prince George,BC
+Angelus Contracting,angelus.com,abuse@support.gandi.net,Gandi SAS,0.375,tier3,General Contractor,Prince George,BC
+Apex Insulation,apex-insulation.com,domainabuse@automattic.com,Automattic Inc.,0.4,tier3,Insulation Contractors,Prince George,BC
+Aqua Drilling Services Ltd.,aqua-drilling.com,abuse@cdmon.com,"10dencehispahard, S.L.",0.25,tier3,Drilling Contractor,Williams Lake,BC
+Bench Rentals,benchrentals.com,abuse@dotEarth.com,"Domain Registration Services, Inc. dba dotEarth.com",0.318,tier3,Construction Services,Prince George,BC
+Big Country Pumps Inc.,bigcountrypumps.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.103,tier3,Pump Service,150 Mile House,BC
+Costa Del Sol,costadelsol.com,legalservices@eurodns.com,EuroDNS S.A.,0.348,tier3,General Contractor,Prince George,BC
+Crossroads Construction CO LTD,crossroads-construction.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.121,tier3,General Contractor,Prince George,BC
+Excel Painting,excel-painting.com,abuse@internet.gmo,"GMO Internet Group, Inc. d/b/a Onamae.com",0.25,tier3,Painting Contractors,Prince George,BC
+GL Construction,gl-construction.com,abuse@1api.net,1API GmbH,0.083,tier3,Home Builders,Williams Lake,BC
+JR & Sons Enterprises Ltd.,jr-sons.com,abuse@one.com,One.com A/S,0.375,tier3,Lead Renovator,Prince George,BC
+MJA Plumbing Services,mjaplumbing.com,abuse@bluehost.com,Bluehost Inc.,0.2,tier3,Plumber,Tumbler Ridge,BC
+Macon Construction LTD,maconconstruction.com,abuse@directnic.com,"DNC Holdings, Inc.",0.095,tier3,Construction Services,Williams Lake,BC
+Mainline Plumbing and Heating,mainlineplumbingandheating.com,abuse@namespro.ca,Namespro Solutions Inc.,0.162,tier3,Plumbing Renovation,Prince George,BC
+NRS Engineering LTD,nrs-engineering.com,abuse@ionos.com,IONOS SE,0.348,tier3,General Engineering Contractor,Prince George,BC
+River Crest Contracting Ltd.,rivercrest.com,abuse@spaceship.com,"Spaceship, Inc.",0.3,tier3,General Contractor,Chilliwack,BC
+Tribrink Contracting Ltd,tribrink.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.294,tier3,General Contractor,Chilliwack,BC
+Legacy Pro Contractors Inc.,legacyprocontractors.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.312,tier3,General Contractor,Chilliwack,BC
+Morningstar Painting,morningstar-painting.com,verisign@virtuadrug.com,Domain Science Kutatasi Szolgaltato Korlatolt Felelossegu Tarsasag,0.209,tier3,Commercial Painter,Chilliwack,BC
+EAM Masonry Ltd,eammasonry.com,abuse@namecheap.com,"NameCheap, Inc.",0.2,tier3,Contractor Referral,Chilliwack,BC
+WSE Contracting,wse.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.0,tier3,Home Improvement,Chilliwack,BC
+Acme Electrical Ltd.,acme-electrical.com,abuse@one.com,One.com A/S,0.25,tier3,Electrical Contractors,Chilliwack,BC
+RT Construction,rtconstruction.com,abuse@dynadot.com,Dynadot Inc,0.091,tier3,Construction,Chilliwack,BC
+Sunshine Painting Ltd,sunshinepainting.com,domain.operations@web.com,"Network Solutions, LLC",0.25,tier3,Painting Contractors,Chilliwack,BC
+James Johnson Enterprises Ltd.,james-johnson.com,domainabuse@tucows.com,Tucows Domains Inc.,0.37,tier3,Holding Company,Chilliwack,BC
+End To End Services Ltd.,endtoend.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.129,tier3,Flooring Contractors,Chilliwack,BC
+Grosvenor Electric Ltd.,grosvenorelectric.com,abuse@enom.com,"eNom, LLC",0.273,tier3,Electrician,Chilliwack,BC
+Jomi Construction Ltd,jomiconstruction.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.39,tier3,General Contractor,Chilliwack,BC
+JB Exteriors,jbexteriors.com,abuse@bluehost.com,Launchpad.com Inc.,0.083,tier3,Siding Contractors,Chilliwack,BC
+Angie's Painting,angiespainting.com,domainabuse@automattic.com,Automattic Inc.,0.32,tier3,Painting Contractors,Chilliwack,BC
+Blue Boy Painter,blueboypainter.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.368,tier3,Painting Contractors,Chilliwack,BC
+JLM Contracting,jlm.com,abuse@ename.com,"eName Technology Co., Ltd.",0.105,tier3,Construction Services,Chilliwack,BC
+G S M Contracting,g-s-m.com,abuse@porkbun.com,Porkbun LLC,0.0,tier3,General Contractor,Chilliwack,BC
+Blue Crest Electric Ltd.,bluecrestelectric.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.389,tier3,Electrician,Chilliwack,BC
+Fraser Valley Roofing Ltd.,fraservalleyroofing.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.194,tier3,Roofing Contractors,Chilliwack,BC
+Tristan Savoie Painting & Decorating,tristansavoiepaintingdecorating.com,domain-abuse@wix.com,Wix.com Ltd.,0.15,tier3,Painting Contractors,Chilliwack,BC
+JG Roofing Ltd.,jg-roofing.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.244,tier3,Roofing Contractors,Chilliwack,BC
+Streamline Painting,streamline-painting.com,ZYS@GNAME.COM,Gname 132 Inc,0.286,tier3,Painting Contractors,Chilliwack,BC
+Service Plumbing,plumbing.com,abuse@key-systems.net,Key-Systems GmbH,0.167,tier3,Plumber,Chilliwack,BC
+Vedder Electric,vedderelectric.com,abuse@ionos.com,IONOS SE,0.087,tier3,Electrician,Chilliwack,BC
+Blue Tech Electric LTD,bluetechelectric.com,abuse@namesilo.com,"NameSilo, LLC",0.077,tier3,Electrician,Chilliwack,BC
+Big Bear Electric Inc.,bigbearelectric.com,abuse@moniker.com,Moniker Online Services LLC,0.323,tier3,Electrical Contractors,Chilliwack,BC
+Dura-Ramp Inc.,dura-ramp.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.24,tier3,Industrial Manufacturers,Chilliwack,BC
+Avista Development,avistadevelopment.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.294,tier3,Building Contractors,Summerland,BC
+Bella Outdoor Living Inc.,bellaoutdoorliving.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.353,tier3,Pergolas,Westbank,BC
+Bellco Drywall Ltd,bellcodrywall.com,domainabuse@tucows.com,Tucows Domains Inc.,0.357,tier3,Drywall Contractors,Salmon Arm,BC
+Belvedere Place Contracting Ltd.,belvedereplace.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.24,tier3,Construction,Kelowna,BC
+Bertrim Contracting,bertrim.com,abuse@ionos.com,IONOS SE,0.133,tier3,Building Contractors,West Kelowna,BC
+Block Construction & Design,blockconstructiondesign.com,abuse-complaints@squarespace.com,Squarespace Domains LLC,0.136,tier3,Home Builders,Armstrong,BC
+Broadview Group,broadview.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.3,tier3,Landscape Contractors,Osoyoos,BC
+CRL Group Holdings Inc.,crl.com,domain.operations@web.com,"Network Solutions, LLC",0.2,tier3,Excavating Contractors,Summerland,BC
+Caliber Developments Ltd.,caliberdevelopments.com,abuse@namespro.ca,Namespro Solutions Inc.,0.286,tier3,Building Contractors,Lake Country,BC
+Chamberlain Builders Ltd.,chamberlainbuilders.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.261,tier3,Home Builders,Summerland,BC
+Chase Valley,chasevalley.com,tld-abuse@hostopia.com,Hostopia Canada Corp,0.222,tier3,General Contractor,Penticton,BC
+Custom Choice Builders,customchoicebuilders.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.39,tier3,Home Builders,Kelowna,BC
+Cutting Edge Carpentry Inc,cuttingedgecarpentry.com,abuse@name.com,"Name.com, Inc.",0.069,tier3,Carpenter,Invermere,BC
+Dachhaus Contracting,dachhaus.com,ymn@juming.com,"Hefei Juming Network Technology Co., Ltd",0.103,tier3,Roofing Contractors,Grand Forks,BC
+Engli Construction Ltd,engliconstruction.com,abuse@promopeople.com,"Promo People, Inc.",0.133,tier3,Home Builders,Kamloops,BC
+Evans Construction Inc,evans-construction.com,abuse@bluehost.com,Bluehost Inc.,0.308,tier3,General Contractor,Vernon,BC
+Fairweather Property Solutions Ltd.,fairweatherproperty.com,abuse@registrar.eu,Hosting Concepts B.V. d/b/a Registrar.eu,0.145,tier3,Commercial Cleaning Services,Kelowna,BC
+Grandt Contracting Ltd,grandt.com,abuse@moniker.com,Moniker Online Services LLC,0.2,tier3,Building Contractors,Kelowna,BC
+Haowen Homes Ltd,haowenhomes.com,domain-abuse@wix.com,Wix.com Ltd.,0.333,tier3,Home Builders,Kelowna,BC
+Hometown Enterprises,hometown.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.222,tier3,Building Contractors,Vernon,BC
+Hydraclean Restoration Services Ltd.,hydracleanrestoration.com,abuse@1api.net,1API GmbH,0.065,tier3,Disaster Cleanup,Kelowna,BC
+Inspiration Homes.,inspirationhomes.com,abuse@dynadot.com,Dynadot Inc,0.25,tier3,Building Contractors,Vernon,BC
+Integrity Roofing,integrity-roofing.com,abuse-contact@sav.com,"Sav.com, LLC",0.087,tier3,Roofing Contractors,Salmon Arm,BC
+JCB Contracting Ltd,jcb.com,abuse@safenames.net,SafeNames Ltd.,0.0,tier3,General Contractor,Vernon,BC
+Jolan Contracting,jolan.com,abuse@ovh.net,OVH sas,0.333,tier3,General Contractor,Kelowna,BC
+KW Concrete,kw-concrete.com,abuse@support.gandi.net,Gandi SAS,0.1,tier3,Concrete Contractors,Kelowna,BC
+Kynoch Builders Inc,kynochbuilders.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.312,tier3,Building Contractors,Kelowna,BC
+Laser Glass Railing Inc.,laserglassrailing.com,abuse@enom.com,"eNom, LLC",0.174,tier3,Railing,Kelowna,BC
+We Build That,webuildthat.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.238,tier3,Home Improvement,Osoyoos,BC
+Viking Concrete,viking-concrete.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.308,tier3,Concrete,Kelowna,BC
+Smoky Valley Contracting Ltd.,smoky-valley.com,abuse@namecheap.com,"NameCheap, Inc.",0.19,tier3,Excavating Contractors,Lake Country,BC
+Semko Contracting Ltd,semko.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.231,tier3,Home Builders,Vernon,BC
+Royce Robert Homes,royceroberthomes.com,abuse@namesilo.com,"NameSilo, LLC",0.231,tier3,Building Contractors,Kelowna,BC
+Parsons Family Homes,parsonsfamilyhomes.com,abuse@rebel.com,Rebel Ltd,0.16,tier3,General Contractor,Coldstream,BC
+Moose Electric,mooseelectric.com,abuse@dynadot.com,Dynadot Inc,0.19,tier3,Electrician,Surrey,BC
+JA Electric Inc,jaelectric.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.19,tier3,Electrician,Richmond,BC
+Gill Electric Co Ltd,gillelectric.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.4,tier3,Electrician,White Rock,BC
+Flash Electric Ltd,flash-electric.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.222,tier3,Electrician,Surrey,BC
+Hilltop Electric,hilltop-electric.com,domain.operations@web.com,"Network Solutions, LLC",0.261,tier3,Electrical Contractors,White Rock,BC
+Databoys Enterprises Inc,databoys.com,abuse@enom.com,"eNom, LLC",0.167,tier3,Electrical Contractors,Richmond,BC
+FG Electric,fgelectric.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.27,tier3,Electrician,Surrey,BC
+Vancity Electric,vancityelectric.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.255,tier3,Commercial Electrician,Surrey,BC
+MTV Enterprise Ltd,mtv.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.286,tier3,Electrician,Richmond,BC
+Remain Current Electric,remaincurrentelectric.com,abuse@namecheap.com,"NameCheap, Inc.",0.188,tier3,Electrician,Surrey,BC
+Westrade Electric,westradeelectric.com,abuse@register.ca,Register.ca Inc.,0.37,tier3,Electrician,North Vancouver,BC
+West Harbour Electric,westharbourelectric.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.12,tier3,Commercial Electrician,Surrey,BC
+Wave Electrical Ltd,wave-electrical.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.16,tier3,Electrician,Surrey,BC
+WE Do Electrical,wedoelectrical.com,abuse@melbourneit.com.au,Netregistry Wholesale Pty Ltd,0.195,tier3,Electrician,Surrey,BC
+W K Electric Ltd,wkelectric.com,abuse@ionos.com,IONOS SE,0.2,tier3,Electrician,Vancouver,BC
+Voltz Electric Ltd.,voltz-electric.com,abuse@bluehost.com,Bluehost Inc.,0.182,tier3,Electrician,Surrey,BC
+Voltech Systems Ltd,voltechsystems.com,abuse@ownregistrar.com,"OwnRegistrar, Inc.",0.296,tier3,Electrician,North Vancouver,BC
+Vanrook Electric Ltd,vanrookelectric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.133,tier3,Electrician,Langley,BC
+Vanguard Power Ltd.,vanguardpower.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.229,tier3,Industrial Electrician,Chilliwack,BC
+Torro Electric Ltd,torroelectric.com,domain-abuse@wix.com,Wix.com Ltd.,0.1,tier3,Electrician,North Vancouver,BC
+The Plan Group,theplan.com,abuse@epik.com,Epik LLC,0.333,tier3,Electrician,Langley,BC
+Tara Electric Ltd,taraelectric.com,abuse@key-systems.net,Key-Systems GmbH,0.138,tier3,Electrician,Surrey,BC
+TY Electric Inc.,ty-electric.com,complaint@gname.com,Gname.com Pte. Ltd.,0.261,tier3,Commercial Electrician,North Vancouver,BC
+TW Electric Ltd,tw-electric.com,abuse@diymysite.com,Cloud Yuqu LLC,0.095,tier3,Electrician,North Vancouver,BC
+TKG Electric Ltd.,tkgelectric.com,DomainAbuse@service.aliyun.com,Alibaba Cloud Computing Ltd. d/b/a HiChina (www.net.cn),0.179,tier3,Electrician,Surrey,BC
+TDM Electric Ltd.,tdm-electric.com,tld-abuse@nic.ru,"Regional Network Information Center, JSC dba RU-CENTER",0.262,tier3,Electrical Contractors,Port Coquitlam,BC
+Synergy Electrical Installations,synergyelectricalinstallations.com,abuse@123-reg.co.uk,123-Reg Limited,0.103,tier3,Electrician,North Vancouver,BC
+Superb Electric,superb-electric.com,fwicann@gname.com,Gname 038 Inc,0.167,tier3,Electrician,North Vancouver,BC
+Sunrise Electrical,sunriseelectrical.com,abuse@bigrock.com,BigRock Solutions Ltd,0.16,tier3,Electrician,Vernon,BC
+Sterling Electric,sterlingelectric.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.242,tier3,Electrician,Surrey,BC
+Step Electric Ltd,stepelectric.com,contact@bizcn.com,"Bizcn.com, Inc.",0.19,tier3,Electrician,Port Coquitlam,BC
+Steelhead Electric Ltd,steelheadelectric.com,abuse@namespro.ca,Namespro Solutions Inc.,0.154,tier3,Electrician,Chilliwack,BC
+Status Electrical Corp,statuselectrical.com,abuse@domainpeople.com,"DomainPeople, Inc.",0.276,tier3,Electrician,Abbotsford,BC
+Standard Electric Ltd,standardelectric.com,abuse@support.gandi.net,Gandi SAS,0.308,tier3,Electrician,Maple Ridge,BC
+Stable Electrical Inc,stableelectrical.com,abuse@promopeople.com,"Promo People, Inc.",0.138,tier3,Electrical Contractors,Delta,BC
+All Circuits Electric Ltd.,allcircuitselectric.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.129,tier3,Electrical Contractors,Nanaimo,BC
+All Is On Electric,allisonelectric.com,abuse@enom.com,"eNom, LLC",0.091,tier3,Electrical Contractors,Victoria,BC
+All Valley Electrical Services,allvalleyelectrical.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.233,tier3,Electrical Contractors,Duncan,BC
+Allied Controls Ltd,alliedcontrols.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.16,tier3,Electrical Engineer,Burnaby,BC
+Amor Energy Corporation,amorenergy.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.162,tier3,Electrical Contractors,Burnaby,BC
+Apaar Electrical Ltd.,apaarelectrical.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.3,tier3,Electrical Wiring,Surrey,BC
+Apex Electrical Ltd,apexelectrical.com,abuse@ionos.com,IONOS SE,0.087,tier3,Electrical Contractors,Surrey,BC
+Archway Construction Ltd.,archwayconstruction.com,domain.operations@web.com,Annulet LLC,0.222,tier3,Home Improvement,Burnaby,BC
+Arcnet Electric Ltd,arcnet-electric.com,abuse@1api.net,1API GmbH,0.167,tier3,Electrical Contractors,Burnaby,BC
+Armature Electric Ltd,armatureelectric.com,abuse@webnames.ca,Webnames.ca Inc.,0.222,tier3,Electric Motor Parts,Vancouver,BC
+Axford Electrical,axfordelectrical.com,abuse@promopeople.com,"Promo People, Inc.",0.345,tier3,Electrical Contractors,Nanaimo,BC
+Wms Enterprises Inc,wms.com,abuse@gcd.com,"GoDaddy Corporate Domains, LLC",0.143,tier3,Commercial Refrigeration,Surrey,BC
+Willow Point Electric Ltd,willowpointelectric.com,abuse@rebel.com,Rebel Ltd,0.154,tier3,Electrician,Campbell River,BC
+Western Integrated,westernintegrated.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.163,tier3,Electrical Engineer,Burnaby,BC
+VoltSafe Inc.,voltsafe.com,abuse@namecheap.com,"NameCheap, Inc.",0.235,tier3,Electrical,Vancouver,BC
+Victory Electric LTD,victory-electric.com,domainabuse@automattic.com,Automattic Inc.,0.154,tier3,Electrical Contractors,Langford,BC
+Valkyrie Electric,valkyrieelectric.com,abuse@bluehost.com,Launchpad.com Inc.,0.207,tier3,Electrical Contractors,Victoria,BC
+VIR Electric Inc,vir-electric.com,DomainAbuse@service.aliyun.com,Alibaba Cloud Computing Ltd. d/b/a HiChina (www.net.cn),0.25,tier3,Electric Motor Manufacturers,Richmond,BC
+Tops Lighting,tops-lighting.com,domainabuse@tucows.com,Tucows Domains Inc.,0.444,tier3,Sign Erectors,Vancouver,BC
+Thor Electric,thor-electric.com,abuse@http.net,HTTP.NET INTERNET GMBH,0.118,tier3,Electrical Contractors,Ucluelet,BC
+Thomson Technology Inc,thomsontechnology.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.205,tier3,Electrical Power System Backup Systems,Langley,BC
+The Marine Service Network,themarinenetwork.com,verisign@virtuadrug.com,Domain Science Kutatasi Szolgaltato Korlatolt Felelossegu Tarsasag,0.095,tier3,Marine Electrical,Delta,BC
+EECOL Electric Corp.,eecolelectric.com,abuse@above.com,Above.com Pty Ltd.,0.385,tier3,Wholesale Electric Supplies,Victoria,BC
+Oceanvolt Electrical Inc.,oceanvoltelectrical.com,abuse@registrygate.com,RegistryGate GmbH,0.216,tier3,Solar Energy Contractors,Victoria,BC
+Electro Fix Victoria,electrofixvictoria.com,domain-abuse@wix.com,Wix.com Ltd.,0.308,tier3,Electrical Contractors,Victoria,BC
+C.R. Harris Electric,crharriselectric.com,abuse@easydns.com,easyDNS Technologies Inc.,0.316,tier3,Electrical Contractors,Victoria,BC
+Island Technical Installations Ltd.,islandtechnicalinstallations.com,abuse@register.ca,Register.ca Inc.,0.3,tier3,Electrical Contractors,Saanichton,BC
+Loyal Electric,loyalelectric.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.167,tier3,Electrical Contractors,Victoria,BC
+G Electric,g-electric.com,abuse@world4you.com,World4You Internet Services GmbH,0.061,tier3,Electrical Contractors,Duncan,BC
+AC Motor Electric Ltd.,acmotorelectric.com,abuse@domainpeople.com,"DomainPeople, Inc.",0.276,tier3,Electric Motor Repair,Penticton,BC
+Vantage Electrical Contracting,vantageelectrical.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.216,tier3,Electrical,Kelowna,BC
+Scotts Contracting Ltd.,scotts.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.235,tier3,Home Improvement,Kelowna,BC
+Ambul Systems Ltd.,ambulsystems.com,abuse@name.com,"Name.com, Inc.",0.4,tier3,Electrical Contractors,Kelowna,BC
+Stoor Enterprises Inc,stoor.com,abuse@hosting.kr,"Megazone Corp., dba HOSTING.KR",0.261,tier3,Electrical Contractors,Kelowna,BC
+Crystal Clear Water Ltd.,crystal-clear-water.com,domain@mfro.net,Mfro Inc.,0.087,tier3,Plumber,Lake Country,BC
+Pipe Piper Plumbing,pipepiperplumbing.com,domainabuse@tucows.com,Tucows Domains Inc.,0.242,tier3,Plumber,Winfield,BC
+MDL Services,mdl.com,DomainAbuse@service.aliyun.com,"Alibaba Cloud Computing (Beijing) Co., Ltd.",0.059,tier3,Plumber,Lake Country,BC
+Knox Mountain Mechanical Ltd.,knoxmountainmechanical.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.118,tier3,Heating and Air Conditioning,Kelowna,BC
+RPG Services,rpg.com,domain.operations@web.com,"Network Solutions, LLC",0.2,tier3,Plumber,Kelowna,BC
+M.A.C. Plumbing & Heating Inc.,macplumbingheating.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.278,tier3,Plumbing and Heating,Kelowna,BC
+Jean Mechanical LTD,jeanmechanical.com,abuse@enom.com,"eNom, LLC",0.316,tier3,Commercial Plumber,Westbank,BC
+Radian Mechanical Inc.,radianmechanical.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.176,tier3,Mechanical Contractors,Kelowna,BC
+Captain Plumber,captainplumber.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.195,tier3,Plumber,Westbank,BC
+Big Sky Plumbing,big-sky-plumbing.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.211,tier3,Plumber,Kelowna,BC
+Action Plumbing & Heating Inc,actionplumbingheating.com,domainabuse@automattic.com,Automattic Inc.,0.182,tier3,Plumber,Oliver,BC
+Dave's Plumbing,daves-plumbing.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.25,tier3,Plumber,"Nakusp,",BC
+Dicks Septic Service,dicksseptic.com,verisign@virtuadrug.com,Domain Science Kutatasi Szolgaltato Korlatolt Felelossegu Tarsasag,0.179,tier3,Plumber,Summerland,BC
+Highmark Plumbing,highmark-plumbing.com,abuse@liquidnetlimited.com,LiquidNet Ltd.,0.308,tier3,Plumber,Kelowna,BC
+Powder Highway Plumbing,powderhighwayplumbing.com,abuse@namespro.ca,Namespro Solutions Inc.,0.129,tier3,Plumber,Castlegar,BC
+WSP Canada Inc,wspcanada.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.235,tier3,Engineering Consultant,Vancouver,BC
+HeyBryan Media Inc,heybryanmedia.com,abuse@namecheap.com,"NameCheap, Inc.",0.261,tier3,Cleaning Services,Vancouver,BC
+Champion Plumbing,championplumbing.com,abuse@dynadot.com,Dynadot Inc,0.167,tier3,Plumber,Vancouver,BC
+Aquataur Services Ltd.,aquataur.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.0,tier3,General Contractor,Vancouver,BC
+Ambassador Plumbing,ambassadorplumbing.com,domain.operations@web.com,"Network Solutions, LLC",0.154,tier3,Plumber,Port Moody,BC
+Andrew Sheret Ltd,andrewsheret.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.414,tier3,Wholesale Plumbing Supplies,Kamloops,BC
+Ange's Plumbing Ltd,angesplumbing.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.167,tier3,Plumber,Coquitlam,BC
+Aqua Valley Plumbing LTD,aquavalleyplumbing.com,domain-abuse@dreamhost.com,"DreamHost, LLC",0.138,tier3,Plumber,Chilliwack,BC
+Aria Plumbing and Heating Ltd.,ariaplumbingandheating.com,abuse@directnic.com,"DNC Holdings, Inc.",0.071,tier3,Plumber,Port Moody,BC
+Aura Interiors,aurainteriors.com,abuse@name.com,"Name.com, Inc.",0.286,tier3,Home Accessories,Abbotsford,BC
+BIGFOOT PLUMBING AND GAS,bigfootplumbingandgas.com,domainabuse@tucows.com,Tucows Domains Inc.,0.316,tier3,Plumbing and Heating,Kamloops,BC
+Bartle & Gibson Co Ltd,bartlegibson.com,abuse@rebel.com,Rebel.ca Corp.,0.2,tier3,Plumbing Fixtures,Chilliwack,BC
+Bathman,bathman.com,abuse@dynadot.com,Dynadot Inc,0.286,tier3,Bathroom Remodel,Port Coquitlam,BC
+Bear Solutions Ltd,bear.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.267,tier3,Plumber,Abbotsford,BC
+Black Bear Trades,blackbeartrades.com,support@namebright.com,DropCatch.com 1330 LLC,0.176,tier3,Woodworking,Maple Ridge,BC
+Blue Gold Plumbing & Heating Ltd.,bluegoldplumbingheating.com,abuse@internet.gmo,"GMO Internet Group, Inc. d/b/a Onamae.com",0.192,tier3,Plumber,Abbotsford,BC
+Bosco Plumbing & Heating Ltd.,boscoplumbingheating.com,abuse@1api.net,1API GmbH,0.258,tier3,Plumbing and Heating,Coquitlam,BC
+C1 Plumbing Ltd,c1plumbing.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.303,tier3,Plumbing Renovation,Langley,BC
+Raw Mechanical,rawmechanical.com,abuse@web.com,Top Tier Domains LLC,0.2,tier3,Plumbing and Heating,Kelowna,BC
+Kelowna Plumbing Services Ltd,kelownaplumbing.com,abuse@enom.com,"eNom, LLC",0.3,tier3,Plumbing Renovation,Kelowna,BC
+EMCO Corporation,emco.com,abuse@gcd.com,"GoDaddy Corporate Domains, LLC",0.138,tier3,Wholesale Plumbing Supplies,West Kelowna,BC
+New Look Interiors Inc,new-look-interiors.com,abuse@ionos.com,IONOS SE,0.231,tier3,Kitchen Cabinets,Prince George,BC
+Strive Plumbing Ltd.,striveplumbing.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.412,tier3,Plumbing and Heating,Williams Lake,BC
+M2 Mechanical,m2mechanical.com,abuse@bluehost.com,Bluehost Inc.,0.19,tier3,Plumbing and Heating,Nanaimo,BC
+Clements Mechanical Inc.,clementsmechanical.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.279,tier3,Mechanical Contractors,Nanaimo,BC
+CMF Plumbing,cmfplumbing.com,abuse@moniker.com,Moniker Online Services LLC,0.385,tier3,Plumbing and Heating,Nanaimo,BC
+The Comfort Group,thecomfort.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.2,tier3,Heating Contractors,Nanaimo,BC
+R+Co Plumbing Ltd.,r-plumbing.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.296,tier3,Plumber,Nanaimo,BC
+Scotia Plumbing Ltd.,scotiaplumbing.com,abuse@namespro.ca,Namespro Solutions Inc.,0.174,tier3,Plumber,Nanoose Bay,BC
+Seaside Service Group Ltd.,seaside.com,abuse@namecheap.com,"NameCheap, Inc.",0.25,tier3,Plumbing and Heating,Parksville,BC
+Evenflow Plumbing Ltd,evenflow-plumbing.com,abuse@porkbun.com,Porkbun LLC,0.083,tier3,Plumber,Chemainus,BC
+Complete Plumbing & Heating,completeplumbingheating.com,abuse@namesilo.com,"NameSilo, LLC",0.061,tier3,Plumber,Halfmoon Bay,BC
+Sechelt Plumbing,secheltplumbing.com,abuse@melbourneit.com.au,Netregistry Wholesale Pty Ltd,0.244,tier3,Plumbing and Heating,Sechelt,BC
+Dana Electric,danaelectric.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.308,tier3,Electrical Contractors,Vancouver,BC
+Get Fencing,getfencing.com,abuse@enom.com,"eNom, LLC",0.267,tier3,Fence Contractors,Vancouver,BC
+Westcoast Contractors,westcoastcontractors.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.378,tier3,General Contractor,Surrey,BC
+WJ Cleaning Services,wj-cleaning.com,domainabuse@35.cn,"Xiamen 35.com Information Co., Ltd.",0.229,tier3,Cleaning Services,Vancouver,BC
+Progressive Plumbing Ltd,progressive-plumbing.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.324,tier3,Plumber,Vancouver,BC
+Concert Properties Ltd,concertproperties.com,abuse@easydns.com,easyDNS Technologies Inc.,0.316,tier3,Real Estate Development,Vancouver,BC
+Roka Projects Inc,rokaprojects.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.229,tier3,General Contractor,Vancouver,BC
+Irish Construction,irishconstruction.com,abuse@hostingireland.ie,Team Blue Internet Services IE Limited,0.154,tier3,Construction Services,Vancouver,BC
+ToServe,toserve.com,DomainAbuse@service.aliyun.com,"Alibaba Cloud Computing (Beijing) Co., Ltd.",0.105,tier3,Moving and Storage Companies,Vancouver,BC
+Amacon Construction Ltd,amaconconstruction.com,abuse@webnames.ca,Webnames.ca Inc.,0.207,tier3,General Contractor,Vancouver,BC
+Totalplan Inc,totalplan.com,domain.operations@web.com,"Network Solutions, LLC",0.25,tier3,Bathroom Design,Vancouver,BC
+Curlys Carpet Repair,curlyscarpetrepair.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.067,tier3,Carpet and Rug Repair,Vancouver,BC
+Sterling Oaks Consulting,sterlingoaks.com,abuse@moniker.com,Moniker Online Services LLC,0.37,tier3,Home Improvement,Vancouver,BC
+New Generation Construction Ltd,new-generation-construction.com,verisign@virtuadrug.com,Domain Science Kutatasi Szolgaltato Korlatolt Felelossegu Tarsasag,0.301,tier3,Construction Services,Vancouver,BC
+Expert Electric Ltd.,expert-electric.com,abuse@reg.ru,Registrar of Domain Names REG.RU LLC,0.174,tier3,Electrician,Vancouver,BC
+JDP Construction Ltd,jdp-construction.com,abuse@dtnt.com,Domain The Net Technologies Ltd.,0.233,tier3,Home Improvement,Vancouver,BC
+Make Projects Ltd,make-projects.com,abuse@ionos.com,IONOS SE,0.095,tier3,Building Contractors,Vancouver,BC
+Unison CM,unisoncm.com,abuse@metaregistrar.com,Metaregistrar BV,0.24,tier3,General Contractor,Vancouver,BC
+Shield Construction Ltd,shieldconstruction.com,abuse@directnic.com,"DNC Holdings, Inc.",0.182,tier3,Construction,Vancouver,BC
+Fusion Projects,fusionprojects.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.294,tier3,Construction Management,Vancouver,BC
+Dapcon Contracting,dapcon.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.3,tier3,General Contractor,Vancouver,BC
+Axiom Builders Inc,axiom-builders.com,abuse@porkbun.com,Porkbun LLC,0.286,tier3,General Contractor,Vancouver,BC
+Eventpower,eventpower.com,domainabuse@tucows.com,Tucows Domains Inc.,0.25,tier3,Electric Generators,Vancouver,BC
+Innovative Steel Ltd,innovative-steel.com,abuse@imena.ua,"Internet Invest, Ltd. dba Imena.ua",0.513,tier3,General Contractor,Vancouver,BC
+Ledcor Industries Ltd,ledcorindustries.com,abuse@namecheap.com,"NameCheap, Inc.",0.231,tier3,General Contractor,Vancouver,BC
+Copa Development Corp,copa-development.com,abuse@ascio.com,"Ascio Technologies, Inc. Danmark - Filial af Ascio technologies, Inc. USA",0.208,tier3,Building Contractors,Vancouver,BC
+True Electric,trueelectric.com,domain-abuse@internetx.com,InterNetX GmbH,0.296,tier3,Electric Companies,Vancouver,BC
+Trucon Contracting,trucon.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.114,tier3,General Contractor,Vancouver,BC
+Coast Utility Contracting Ltd.,coastutility.com,domain-abuse@wix.com,Wix.com Ltd.,0.211,tier3,Power Line Construction,Victoria,BC
+Aspect Electrical Services,aspectelectrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.083,tier3,Electrician,Victoria,BC
+Rai Contracting,rai.com,abuse@comlaude.com,Nom-iq Ltd. dba COM LAUDE,0.105,tier3,Asbestos Removal,Victoria,BC
+Silver Fern Stainless Ltd.,silverfernstainless.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.444,tier3,Sheet Metal Fabrication,Victoria,BC
+Conrad Contracting,conrad.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.37,tier3,General Contractor,Victoria,BC
+Coastal Shores Window Cleaning,coastalshoreswindowcleaning.com,abuse@1api.net,1API GmbH,0.154,tier3,Window Cleaning,Victoria,BC
+CNA Electric Ltd.,cna-electric.com,domain-abuse@wix.com,Wix.com Ltd.,0.111,tier3,Electrical Contractors,Nanaimo,BC
+Callaghan Heating Ltd.,callaghanheating.com,domain.operations@web.com,"Network Solutions, LLC",0.25,tier3,Heating and Air Conditioning,Maple Ridge,BC
+Canadian Aerothermal,canadianaerothermal.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.267,tier3,Heating Contractors,Penticton,BC
+Central Commercial & Residential Services Ltd.,centralcommercialresidential.com,abuse@bluehost.com,Bluehost Inc.,0.105,tier3,Heating and Air Conditioning,Burnaby,BC
+Centurion Contracting Ltd.,centurion.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.2,tier3,General Contractor,Port Coquitlam,BC
+Clarke Heating and Cooling,clarkeheatingandcooling.com,abuse@namecheap.com,"NameCheap, Inc.",0.229,tier3,Heating and Air Conditioning,Victoria,BC
+Watt HVAC,watthvac.com,abuse@1api.net,1API GmbH,0.333,tier3,Air Conditioning Repair,Vancouver,BC
+Waters Edge Construction Ltd.,watersedgeconstruction.com,abuse@enom.com,"eNom, LLC",0.143,tier3,General Contractor,Victoria,BC
+Venturo HVAC Inc.,venturohvac.com,abuse@spaceship.com,"Spaceship, Inc.",0.19,tier3,Heating Contractors,Surrey,BC
+Vanheat Services,vanheat.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.182,tier3,Heating and Air Conditioning,North Vancouver,BC
+Trust Heating & Cooling Ltd.,trustheatingcooling.com,domainabuse@tucows.com,Tucows Domains Inc.,0.4,tier3,Heating and Air Conditioning,Coquitlam,BC
+True Air Systems Ltd,trueairsystems.com,registry-abuse@nexigen.digital,Synergy Wholesale Accreditations Pty Ltd,0.269,tier3,Heating and Air Conditioning,Coquitlam,BC
+Trifecta Temperature Control Ltd.,trifectatemperaturecontrol.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.24,tier3,Heating and Air Conditioning,Victoria,BC
+Tower HVAC Solutions,towerhvac.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.345,tier3,Heating and Air Conditioning,Vancouver,BC
+Total Renovations,total-renovations.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.296,tier3,Home Improvement,Surrey,BC
+Total Home Services,totalhome.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.244,tier3,Building Restoration,Coquitlam,BC
+Tjikko Restoration & Services Ltd.,tjikkorestoration.com,verisign@virtuadrug.com,Domain Science Kutatasi Szolgaltato Korlatolt Felelossegu Tarsasag,0.214,tier3,Fire and Water Damage Restoration,Surrey,BC
+Spears Sales & Service Ltd.,spearssales.com,abuse@namejuice.com,"BRANDON GRAY INTERNET SERVICES INC. (dba ""NameJuice.com"")",0.13,tier3,Pump Service,Burnaby,BC
+Silex Canada,silexcanada.com,abuse@easydns.com,easyDNS Technologies Inc.,0.188,tier3,General Contractor,North Vancouver,BC
+Seguin Morris,seguinmorris.com,abuse@rebel.com,Rebel Ltd,0.111,tier3,Heating and Air Conditioning,Port Coquitlam,BC
+Satrap HVAC Services Inc,satrap-hvac.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.229,tier3,Commercial Air Conditioning Contractors,North Vancouver,BC
+Samson Homes,samson-homes.com,abuse@enartiasecurity.net,Enartia Single Member S.A.,0.111,tier3,Home Renovation,North Vancouver,BC
+Rocky Cross Construction Ltd.,rockycrossconstruction.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.146,tier3,Fire and Water Damage Restoration,Victoria,BC
+Rob's Heating,robsheating.com,abuse@dynadot.com,Dynadot Inc,0.211,tier3,Heating and Air Conditioning,Vancouver,BC
+Rivercity Enterprises,rivercity.com,abuse@gcd.com,"GoDaddy Corporate Domains, LLC",0.118,tier3,Plumber,Maple Ridge,BC
+Ridgeline Mechanical Ltd,ridgelinemechanical.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.267,tier3,Mechanical Contractors,Courtenay,BC
+General Heating Ltd.,general-heating.com,abuse@ait.com,"Advanced Internet Technologies, Inc. (AIT)",0.204,tier3,Heating and Air Conditioning,Vancouver,BC
+Liesch Interiors Ltd.,lieschinteriors.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.154,tier3,Trade Contractor,South Island,BC
+MAC Reno Design Build Ltd.,macrenodesignbuild.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.158,tier3,General Contractor,South Island,BC
+Maltesen Masonry Ltd.,maltesenmasonry.com,abuse@namesilo.com,"NameSilo, LLC",0.333,tier3,Trade Contractor,Mid Island,BC
+McElhanney  Ltd.,mcelhanney.com,abuse@webnames.ca,Webnames.ca Inc.,0.3,tier3,Professional - Industry,North Island,BC
+MGM Mechanical Ltd.,mgmmechanical.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.3,tier3,Trade Contractor,South Island,BC
+Michell Excavating Limited,michellexcavating.com,abuse@bluehost.com,Bluehost Inc.,0.154,tier3,Civil Contractor,South Island,BC
+Miranda Construction Ltd.,miranda-construction.com,billing@registermatrix.com,"Media Elite Holdings Limited, S.A.",0.294,tier3,General Contractor,Mid Island,BC
+MKM Projects Ltd.,mkmprojects.com,abuse@123-reg.co.uk,123-Reg Limited,0.211,tier3,General Contractor,Mid Island,BC
+MNP LLP,mnp.com,domain.operations@web.com,"Network Solutions, LLC",0.2,tier3,Professional - Industry,North Island,BC
+MR Crane Service Ltd.,mrcrane.com,abuse@directnic.com,"DNC Holdings, Inc.",0.182,tier3,Manufacturer & Supplier,South Island,BC
+Multivista,multivista.com,icann-abuse-reports@tierra.net,DomainSpot LLC,0.2,tier3,Associate,South Island,BC
+Nordic Industries Ltd.,nordic-industries.com,abuse@joker.com,CSL Computer Service Langenbach GmbH d/b/a joker.com,0.138,tier3,Trade Contractor,South Island,BC
+Omicron Construction Ltd.,omicron-construction.com,abuse@ovh.net,OVH sas,0.222,tier3,General Contractor,Off Island,BC
+Orion Construction,orion-construction.com,abuse@namecheap.com,"NameCheap, Inc.",0.148,tier3,General Contractor,North Island,BC
+Paladin Technologies Inc.,paladin-technologies.com,abuse@regtons.com,"Gransy, s.r.o.",0.267,tier3,Trade Contractor,South Island,BC
+Phoenix Glass Inc,phoenixglass.com,abuse@enom.com,"eNom, LLC",0.235,tier3,Trade Contractor,Off Island,BC
+Project Delivery Services,project-delivery.com,abuse@ascio.com,"Ascio Technologies, Inc. Danmark - Filial af Ascio technologies, Inc. USA",0.208,tier3,Public Owner Agency,South Island,BC
+Ram Roofing Ltd.,ram-roofing.com,abuse@dynadot.com,Dynadot Inc,0.222,tier3,Trade Contractor,North Island,BC
+RBC Wealth Management,rbcwealthmanagement.com,abuse@gcd.com,"GoDaddy Corporate Domains, LLC",0.217,tier3,Associate,South Island,BC
+RC Roofing Ltd.,rcroofing.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.167,tier3,Trade Contractor,North Island,BC
+Redline Glass Ltd.,redlineglass.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.182,tier3,Trade Contractor,South Island,BC
+Ridgeline Mechanical Ltd.,ridgelinemechanical.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.267,tier3,Trade Contractor,North Island,BC
+Scotiabank,scotiabank.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.19,tier3,Associate,South Island,BC
+Seafirst Construction Corporation,seafirstconstruction.com,domain-abuse@dreamhost.com,"DreamHost, LLC",0.267,tier3,General Contractor,Off Island,BC
+Securco Services Inc.,securco.com,domainabuse@tucows.com,Tucows Domains Inc.,0.286,tier3,Trade Contractor,Mid Island,BC
+Strong Construction Group,strong-construction.com,abuse@ionos.com,IONOS SE,0.222,tier3,General Contractor,South Island,BC
+SupErb Construction Ltd.,superb-construction.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.439,tier3,General Contractor,Mid Island,BC
+The Home Depot PRO,thehomedepotpro.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.256,tier3,Manufacturer & Supplier,Mid Island,BC
+Top Line Roofing Ltd.,toplineroofing.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.231,tier3,Trade Contractor,South Island,BC
+TQ Insulators Ltd.,tqinsulators.com,abuse@rebel.com,Rebel Ltd,0.111,tier3,Trade Contractor,South Island,BC
+Barrington Electric Ltd.,barringtonelectric.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.138,tier3,Electrical Contractor,Scarborough,ON
+Dry Master Toronto Inc.,drymastertoronto.com,complaint@gname.com,Gname.com Pte. Ltd.,0.2,tier3,Electrical Contractor,Etobicoke,ON
+Luma Electric Ltd.,luma-electric.com,domain-abuse@wix.com,Wix.com Ltd.,0.105,tier3,Electrical Contractor,Brampton,ON
+Northern Electric,northernelectric.com,domain.operations@web.com,"Network Solutions, LLC",0.25,tier3,Electrical Contractor,Moonbeam,ON
+Harson Electrical Services Inc.,harsonelectrical.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.359,tier3,Electrical Contractor,Hamilton,ON
+Butler Electric,butlerelectric.com,abuse@enom.com,"eNom, LLC",0.105,tier3,Electrical Contractor,Angus,ON
+Limitless Electrical Solutions Inc.,limitless-electrical.com,abuse@namecheap.com,"NameCheap, Inc.",0.276,tier3,Electrical Contractor,Powassan,ON
+Enhance Electrical Services,enhance-electrical.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.114,tier3,Electrical Contractor,Orangeville,ON
+Shockproof Electric,shockproofelectric.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.207,tier3,Electrical Contractor,Hearst,ON
+Spot-On Electrical,spot-onelectrical.com,abuse@melbourneit.com.au,Netregistry Wholesale Pty Ltd,0.279,tier3,Electrical Contractor,Ottawa,ON
+Cj West Contracting,cjwest.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.242,tier3,Electrical Contractor,Keswick,ON
+DS Electric Inc,dselectric.com,abuse@dynadot.com,Dynadot Inc,0.222,tier3,Electrical Contractor,Stoney Creek,ON
+Sutherland Power,sutherlandpower.com,abuse@register.ca,Register.ca Inc.,0.385,tier3,Electrical Contractor,Irondale,ON
+Vor-Tech Services Inc,vor-tech.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.188,tier3,Electrical Contractor,Grimsby,ON
+Dem Corp. Electrical Services,demelectrical.com,abuse@easyspace.com,Easyspace Limited,0.174,tier3,Electrical Contractor,Hamilton,ON
+Beck Electrical Contracting Ltd.,beckelectrical.com,domain-abuse@internetx.com,InterNetX GmbH,0.069,tier3,Electrical Contractor,Carp,ON
+Tunks & Kosi Electric Ltd,tunkskosielectric.com,domainabuse@automattic.com,Automattic Inc.,0.345,tier3,Electrical Contractor,Strathroy,ON
+Premier Electrical Contractors Inc.,premierelectricalcontractors.com,abuse@namesilo.com,"NameSilo, LLC",0.211,tier3,Electrical Contractor,Limehouse,ON
+Florio Electric,florioelectric.com,abuse@easydns.com,easyDNS Technologies Inc.,0.229,tier3,Electrical Contractor,Sunderland,ON
+Only Electric,onlyelectric.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.148,tier3,Electrical Contractor,Sudbury,ON
+Sun Shine Electrical Inc.,sunshineelectrical.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.256,tier3,Electrical Contractor,Tecumseh,ON
+Stroma Service Consulting Inc,stroma.com,abuse@support.gandi.net,Gandi SAS,0.267,tier3,Electrical Contractor,North Bay,ON
+IVR Electrical,ivrelectrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.19,tier3,Electrical Contractor,North York,ON
+Cooper Electric,cooperelectric.com,abuse@name.com,"Name.com, Inc.",0.182,tier3,Electrical Contractor,Port Hope,ON
+Pelican Electric,pelicanelectric.com,abuse@enom.com,"eNom, LLC",0.2,tier3,Electrical Contractor,Stoney Creek,ON
+Regional Trenching,regionaltrenching.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.286,tier3,Electrical Contractor,Thorold,ON
+Ferguson Electrical Solutions Inc,ferguson-electrical.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.293,tier3,Electrical Contractor,Cambridge,ON
+Evolve Electrical Services Inc,evolve-electrical.com,abuse@domainbox.com,Mesh Digital Limited,0.345,tier3,Electrical Contractor,Concord,ON
+Parkview Electric,parkviewelectric.com,domain.operations@web.com,"Network Solutions, LLC",0.167,tier3,Electrical Contractor,Ancaster,ON
+Best Electric Inc,best-electric.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.148,tier3,Electrical Contractor,Toronto,ON
+Verhoef Electric Limited,verhoefelectric.com,abuse@rebel.com,Rebel Ltd,0.286,tier3,Electrical Contractor,Jordan Station,ON
+Nickel City Electric Inc,nickelcityelectric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.059,tier3,Electrical Contractor,Whitefish,ON
+J Electric,jelectric.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.154,tier3,Electrical Contractor,Mississauga,ON
+Jnl Electric,jnl-electric.com,domainabuse@automattic.com,Automattic Inc.,0.273,tier3,Electrical Contractor,Gravenhurst,ON
+Kaya Power Inc,kayapower.com,abuse@nicproxy.com,Nics Telekomunikasyon A.S.,0.235,tier3,Electrical Contractor,London,ON
+Root3 Engineering Ltd,root3engineering.com,abuse@namecheap.com,"NameCheap, Inc.",0.154,tier3,Electrical Contractor,Toronto,ON
+Bronco Electric,bronco-electric.com,abuse@support.gandi.net,Gandi SAS,0.167,tier3,Electrical Contractor,Strathroy,ON
+Ronco Electric Ltd,roncoelectric.com,support@namebright.com,DropCatch.com 1255 LLC,0.323,tier3,Electrical Contractor,Simcoe,ON
+Culp Electric Ltd,culpelectric.com,abuse@bluehost.com,Bluehost Inc.,0.286,tier3,Electrical Contractor,Smithville,ON
+Image Electric Inc,image-electric.com,abuse@ionos.com,IONOS SE,0.182,tier3,Electrical Contractor,Toronto,ON
+Strak Holdings Inc,strak.com,abuse@key-systems.net,Key-Systems GmbH,0.19,tier3,Electrical Contractor,Mississauga,ON
+Jac Electrical,jac-electrical.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.167,tier3,Electrical Contractor,Amherstburg,ON
+Shaw Electrical Solutions Ltd,shaw-electrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.091,tier3,Electrical Contractor,Palmerston,ON
+TR Electric Inc,tr-electric.com,compliance_abuse@webnic.cc,Web Commerce Communications Limited dba WebNic.cc,0.213,tier3,Electrical Contractor,St Catharines,ON
+Beacon Electric Inc,beaconelectric.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.385,tier3,Electrical Contractor,Camlachie,ON
+Titan Electric,titanelectric.com,abuse@dynadot.com,Dynadot Inc,0.095,tier3,Electrical Contractor,Redbridge,ON
+Rg Electric,rg-electric.com,DomainAbuse@service.aliyun.com,"Alibaba Cloud Computing (Beijing) Co., Ltd.",0.19,tier3,Electrical Contractor,Whitby,ON
+Dragon Electric Inc,dragon-electric.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.188,tier3,Electrical Contractor,Ancaster,ON
+Electrical Installation,electrical-installation.com,abuse@nameshield.net,Nameshield SAS,0.216,tier3,Electrical Contractor,Hamilton,ON
+Milan's Contracting Services Inc,milans.com,abuse-contact@sav.com,"Sav.com, LLC",0.167,tier3,Electrical Contractor,East Gwillbury,ON
+I.D. Electric Inc,id-electric.com,domain-abuse@wix.com,Wix.com Ltd.,0.235,tier3,Electrical Contractor,Fergus,ON
+Barker Electric,barkerelectric.com,domain.operations@web.com,Annulet LLC,0.364,tier3,Electrical Contractor,Corbyville,ON
+Fabtech Mechanical Inc,fabtechmechanical.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.214,tier3,Electrical Contractor,Cambridge,ON
+Sunrise Electric Inc,sunrise-electric.com,DomainAbuse@service.aliyun.com,"Alibaba Cloud Computing (Beijing) Co., Ltd.",0.17,tier3,Electrical Contractor,Toronto,ON
+Rm Services,rm.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.174,tier3,Electrical Contractor,Rockland,ON
+Intel Electrical Services Ltd,intelelectrical.com,abuse@namecheap.com,"NameCheap, Inc.",0.32,tier3,Electrical Contractor,Rockwood,ON
+Bfe Electrical Services,bfeelectrical.com,abuse@ionos.com,IONOS SE,0.091,tier3,Electrical Contractor,Perth,ON
+Northwood Electric Ltd,northwood-electric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.062,tier3,Electrical Contractor,Grand Valley,ON
+Pdi Electric,pdielectric.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.182,tier3,Electrical Contractor,Cornwall,ON
+Msl Enterprise,msl.com,abuse@dynadot.com,Dynadot Inc,0.0,tier3,Electrical Contractor,Bradford,ON
+Industry Electric,industry-electric.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.146,tier3,Electrical Contractor,Orangeville,ON
+Light Electric Contracting Inc.,light-electric.com,abuse@beget.com,Beget LLC,0.211,tier3,Electrical Contractor,Toronto,ON
+Ranieri Electrical,ranierielectrical.com,abuse-complaints@squarespace.com,Squarespace Domains LLC,0.162,tier3,Electrical Contractor,Ottawa,ON
+H & H Electric Corporation Ltd,hhelectric.com,abuse@spaceship.com,"Spaceship, Inc.",0.19,tier3,Electrical Contractor,Thornhill,ON
+Ulectric Inc.,ulectric.com,abuse@namesilo.com,"NameSilo, LLC",0.125,tier3,Electrical Contractor,Kitchener,ON
+Cd Plus Services Inc,cd-plus.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.121,tier3,Electrical Contractor,Brampton,ON
+Bingham Controls Ltd,binghamcontrols.com,abuse@bluehost.com,Bluehost Inc.,0.333,tier3,Electrical Contractor,Oshawa,ON
+Dgr Electrical Contracting Inc,dgrelectrical.com,domain-abuse@wix.com,Wix.com Ltd.,0.1,tier3,Electrical Contractor,Beeton,ON
+Electro Stars Inc.,electrostars.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.222,tier3,Electrical Contractor,Hamilton,ON
+Evergreen Electrical Inc.,evergreenelectrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.148,tier3,Electrical Contractor,Whitby,ON
+Artvesta Inc,artvesta.com,abuse@inames.co.kr,"Inames Co., Ltd.",0.429,tier3,Electrical Contractor,Thornhill,ON
+Jjnm Services Inc,jjnm.com,abuse@ename.com,"eName Technology Co., Ltd.",0.2,tier3,Electrical Contractor,Grand Bend,ON
+C.M.S. Electrical Group Ltd,cmselectrical.com,abuse@web.com,"Indirection Identity, LLC",0.235,tier3,Electrical Contractor,Richmond Hill,ON
+Campbell Electric,campbell-electric.com,abuse@enom.com,"eNom, LLC",0.095,tier3,Electrical Contractor,Battersea,ON
+Eric Hunter,eric-hunter.com,abuse@ovh.net,OVH sas,0.111,tier3,Electrical Contractor,Kitchener,ON
+Stone Electric,stone-electric.com,complaint@gname.com,Gname.com Pte. Ltd.,0.308,tier3,Electrical Contractor,Lindsay,ON
+Pole Electric Inc,poleelectric.com,abuse@joker.com,CSL Computer Service Langenbach GmbH d/b/a joker.com,0.148,tier3,Electrical Contractor,Richmond Hill,ON
+Acsa Electric,acsaelectric.com,abuse@registrar.eu,Hosting Concepts B.V. d/b/a Registrar.eu,0.292,tier3,Electrical Contractor,North York,ON
+Star Con,starcon.com,abuse@webnames.ca,Webnames.ca Inc.,0.222,tier3,Electrical Contractor,Toronto,ON
+Yilong Electric Ltd,yilongelectric.com,dnsabuse@tencent.com,"DNSPod, Inc.",0.095,tier3,Electrical Contractor,Aurora,ON
+NJ Electrical Inc.,nj-electrical.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.067,tier3,Electrical Contractor,Lincoln,ON
+Sims Electric,simselectric.com,domain.operations@web.com,"Register.com - Network Solutions, LLC",0.353,tier3,Electrical Contractor,Bowmanville,ON
+Robot Electrical Services,robotelectrical.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.286,tier3,Electrical Contractor,Toronto,ON
+Capson Electric,capsonelectric.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.16,tier3,Electrical Contractor,Huntsville,ON
+Bremner Electric,bremnerelectric.com,abuse@namesilo.com,"NameSilo, LLC",0.167,tier3,Electrical Contractor,Loring,ON
+East End Electric,eastendelectric.com,tld-abuse@hostopia.com,Hostopia Canada Corp,0.312,tier3,Electrical Contractor,Toronto,ON
+Stellar Electrical Ltd,stellar-electrical.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.25,tier3,Electrical Contractor,Windsor,ON
+Kestrel Electric Company,kestrelelectric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.2,tier3,Electrical Contractor,St Thomas,ON
+Atlas Ontario Electric Ltd.,atlasontarioelectric.com,domain-abuse@wix.com,Wix.com Ltd.,0.071,tier3,Electrical Contractor,Vaughan,ON
+Golden Triangle Electric Ltd,goldentriangleelectric.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.417,tier3,Electrical Contractor,Kitchener,ON
+Mavric Electric Incorporated,mavricelectric.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.188,tier3,Electrical Contractor,Ancaster,ON
+Empower Electrical Ltd,empowerelectrical.com,abuse@namecheap.com,"NameCheap, Inc.",0.296,tier3,Electrical Contractor,Kitchener,ON
+Epass Consulting Ltd,epass.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.125,tier3,Electrical Contractor,North York,ON
+Prime Automation Inc,prime-automation.com,abuse@regery.com,DEVEXPANSE LTD d/b/a Regery.com,0.3,tier3,Electrical Contractor,Waterloo,ON
+Complete Electrical Solutions,complete-electrical.com,abuse@enom.com,"eNom, LLC",0.174,tier3,Electrical Contractor,London,ON
+I.A.M Electrical Services Inc,iamelectrical.com,abuse@netistrar.com,Netistrar Limited,0.348,tier3,Electrical Contractor,Ajax,ON
+Old School Electric Services,oldschoolelectric.com,abuse@123-reg.co.uk,123-Reg Limited,0.077,tier3,Electrical Contractor,Oxford Mills,ON
+Clearwater Electric,clearwater-electric.com,domainabuse@automattic.com,Automattic Inc.,0.414,tier3,Electrical Contractor,Port Sydney,ON
+Dunbar Electric Inc,dunbarelectric.com,domain-abuse@dreamhost.com,"DreamHost, LLC",0.25,tier3,Electrical Contractor,Kitchener,ON
+Coopson Group Inc,coopson.com,abuse@ionos.com,IONOS SE,0.267,tier3,Electrical Contractor,Portland,ON
+Levy Electrical Services Inc,levyelectrical.com,abuse@dynadot.com,Dynadot Inc,0.182,tier3,Electrical Contractor,Embro,ON
+Westcon Service,westcon.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.286,tier3,Electrical Contractor,Grimsby,ON
+Dot Electrical Services,dotelectrical.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.182,tier3,Electrical Contractor,Newcastle,ON
+Ro Electric,roelectric.com,abuse@joker.com,CSL Computer Service Langenbach GmbH d/b/a joker.com,0.154,tier3,Electrical Contractor,Mississauga,ON
+Alectra Utilities Corp,alectrautilities.com,abuse@authenticweb.com,Authentic Web Inc.,0.4,tier3,Electrical Contractor,Guelph,ON
+Glectric Inc.,glectric.com,abuse@ename.com,"eName Technology Co., Ltd.",0.167,tier3,Electrical Contractor,Bradford,ON
+Lloyd'S Electric Company Limited,lloydselectric.com,domain.operations@web.com,"Network Solutions, LLC",0.182,tier3,Electrical Contractor,Woodstock,ON
+Superior Power Electric Ltd.,superiorpowerelectric.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.121,tier3,Electrical Contractor,Brampton,ON
+Valor Electric Inc,valor-electric.com,abuse@namecheap.com,"NameCheap, Inc.",0.261,tier3,Electrical Contractor,Hamilton,ON
+Bnc Electric Inc,bncelectric.com,abuse@ionos.com,IONOS SE,0.3,tier3,Electrical Contractor,Mississauga,ON
+Ko-Electric Inc,ko-electric.com,abuse@enom.com,"eNom, LLC",0.133,tier3,Electrical Contractor,Mississauga,ON
+Phase Five Electric,phasefiveelectric.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.341,tier3,Electrical Contractor,Beachville,ON
+Aux Group Inc.,aux.com,abuse@name.com,"Name.com, Inc.",0.2,tier3,Electrical Contractor,Richmond Hill,ON
+Crescent Ridge Services,crescent-ridge.com,abuse@ait.com,"Advanced Internet Technologies, Inc. (AIT)",0.208,tier3,Electrical Contractor,New Hamburg,ON
+Daves Electric,daveselectric.com,abuse@moniker.com,Moniker Online Services LLC,0.214,tier3,Electrical Contractor,Baden,ON
+Finesse Electric Inc,finesse-electric.com,abuse@porkbun.com,Porkbun LLC,0.087,tier3,Electrical Contractor,York,ON
+A.F. Electric,afelectric.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.27,tier3,Electrical Contractor,Welland,ON
+Mv Electric Inc.,mvelectric.com,abuse@spaceship.com,"Spaceship, Inc.",0.2,tier3,Electrical Contractor,Schomberg,ON
+Grounded Grid Corp,grounded-grid.com,domainabuse@tucows.com,Tucows Domains Inc.,0.148,tier3,Electrical Contractor,Meaford,ON
+Poweredge,poweredge.com,abuse@safenames.net,SafeNames Ltd.,0.222,tier3,Electrical Contractor,Etobicoke,ON
+Maestro Solutions Technologies Inc,maestro-technologies.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.275,tier3,Electrical Contractor,Mississauga,ON
+M&J Electric Inc,mjelectric.com,abuse@gcd.com,"GoDaddy Corporate Domains, LLC",0.111,tier3,Electrical Contractor,Cambridge,ON
+Sunshine Electrical Services Inc,sunshineelectrical.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.263,tier3,Electrical Contractor,Paris,ON
+Mlc Electric Inc,mlcelectric.com,DomainAbuse@service.aliyun.com,"Alibaba Cloud Computing (Beijing) Co., Ltd.",0.186,tier3,Electrical Contractor,Innisfil,ON
+Mjh Electrical Inc,mjhelectrical.com,domain-abuse@wix.com,Wix.com Ltd.,0.1,tier3,Electrical Contractor,Sault Ste Marie,ON
+Lake Home Electric,lakehomeelectric.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.343,tier3,Electrical Contractor,Seguin,ON
+Ecc Corporation,ecc.com,abuse@dynadot.com,Dynadot Inc,0.0,tier3,Electrical Contractor,Hamilton,ON
+Co-Al Electric Inc.,al-electric.com,abuse@united-domains.de,united-domains GmbH,0.194,tier3,Electrical Contractor,Etobicoke,ON
+Clear Pathway Solutions Inc,clearpathway.com,abuse@bluehost.com,Bluehost Inc.,0.286,tier3,Electrical Contractor,Hamilton,ON
+Steady Electrical Contracting Inc,steadyelectrical.com,abuse@fluccs.com.au,The Namespace Group Pty Ltd,0.176,tier3,Electrical Contractor,Keswick,ON
+AMM Electric Inc,ammelectric.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.111,tier3,Electrical Contractor,Mississauga,ON
+Wps Electric Ltd.,wpselectric.com,abuse@hkdns.hk,West263 International Limited,0.303,tier3,Electrical Contractor,London,ON
+Country Electric,countryelectric.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.222,tier3,Electrical Contractor,St George,ON
+Neal Electric Ltd,nealelectric.com,icann-abuse-reports@tierra.net,DomainSpot LLC,0.174,tier3,Electrical Contractor,Bracebridge,ON
+Khanstruction Ltd,khanstruction.com,abuse@123-reg.co.uk,123-Reg Limited,0.1,tier3,Electrical Contractor,Markham,ON
+Omega Electric Services Inc,omega-electric.com,abuse@metaregistrar.com,Metaregistrar BV,0.333,tier3,Electrical Contractor,Arkell,ON
+Mattson Group Ltd.,mattson.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.118,tier3,Electrical Contractor,Kingston,ON
+Wheeler Electric Inc,wheeler-electric.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.211,tier3,Electrical Contractor,Guelph,ON
+Elteck Electric,elteck-electric.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.154,tier3,Electrical Contractor,Toronto,ON
+Jp Electricals Inc.,jpelectricals.com,domainabuse@tucows.com,Tucows Domains Inc.,0.214,tier3,Electrical Contractor,Brampton,ON
+S.B.S. Electric Ltd,sbselectric.com,domain.operations@web.com,"Network Solutions, LLC",0.316,tier3,Electrical Contractor,Mississauga,ON
+Jw Electric,jw-electric.com,abuse@namecheap.com,"NameCheap, Inc.",0.2,tier3,Electrical Contractor,Nestor Falls,ON
+Coastal Electrical,coastal-electrical.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.286,tier3,Electrical Contractor,Scarborough,ON
+Kraner Electrical Ltd,kranerelectrical.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.148,tier3,Electrical Contractor,Guelph,ON
+Adam'S Electric Inc.,adamselectric.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.3,tier3,Electrical Contractor,St Catharines,ON
+Vm Electric,vm-electric.com,abuse@west.cn,"Chengdu West Dimension Digital Technology Co., Ltd.",0.192,tier3,Electrical Contractor,Strathroy,ON
+Kinetic Electric Services,kineticelectric.com,abuse@enom.com,"eNom, LLC",0.1,tier3,Electrical Contractor,Barrie,ON
+Trade Mark Industrial Inc,trademarkindustrial.com,abuse@bluehost.com,Bluehost Inc.,0.207,tier3,Electrical Contractor,Cambridge,ON
+422 Electric,422electric.com,domain-abuse@wix.com,Wix.com Ltd.,0.111,tier3,Electrical Contractor,Puslinch,ON
+Ryan Hogan,ryanhogan.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.146,tier3,Electrical Contractor,Perth,ON
+Large Innovations Inc.,largeinnovations.com,abuse@1api.net,1API GmbH,0.154,tier3,Electrical Contractor,Burlington,ON
+Northwest Supply,northwestsupply.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.178,tier3,Electrical Contractor,Sioux Lookout,ON
+Springvalley Electric,springvalleyelectric.com,abuse@namesilo.com,"NameSilo, LLC",0.207,tier3,Electrical Contractor,Oro Medonte,ON
+Electro Omega,electroomega.com,abuse@gkg.net,"GKG.Net, Inc.",0.211,tier3,Electrical Contractor,Kitchener,ON
+Jpi Electrical Limited,jpielectrical.com,abuse@easydns.com,easyDNS Technologies Inc.,0.235,tier3,Electrical Contractor,Stoney Creek,ON
+Quattro Electric Ltd.,quattroelectric.com,abuse@webnames.ca,Webnames.ca Inc.,0.231,tier3,Electrical Contractor,Milton,ON
+El-Com Electric,el-comelectric.com,abuse@registrar.eu,Hosting Concepts B.V. d/b/a Registrar.eu,0.24,tier3,Electrical Contractor,Mississauga,ON
+B-Power Ltd,b-power.com,abuse@hosting.kr,"Megazone Corp., dba HOSTING.KR",0.24,tier3,Electrical Contractor,Ottawa,ON
+Top Choice Electrical (Contracting Inc.),topchoiceelectrical.com,domain-abuse@dreamhost.com,"DreamHost, LLC",0.2,tier3,Electrical Contractor,Sharon,ON
+Thomas Electrical Service,thomaselectrical.com,abuse@dynadot.com,Dynadot Inc,0.083,tier3,Electrical Contractor,Caistor Centre,ON
+Dale Reid,dalereid.com,abuse@porkbun.com,Porkbun LLC,0.125,tier3,Electrical Contractor,Campbellford,ON
+BH Electric Solutions Inc.,bhelectric.com,contact@bizcn.com,"Bizcn.com, Inc.",0.316,tier3,Electrical Contractor,Mississauga,ON
+J.D Electric,jd-electric.com,ZYS@GNAME.COM,Gname 147 Inc,0.1,tier3,Electrical Contractor,Trenton,ON
+Tc Electrical Contracting,tc-electrical.com,abuse@register.it,Register SPA,0.24,tier3,Electrical Contractor,Bethany,ON
+Amped Electric,ampedelectric.com,abuse@name.com,"Name.com, Inc.",0.381,tier3,Electrical Contractor,London,ON
+Defina Consulting Inc,defina.com,abuse@ionos.com,IONOS SE,0.143,tier3,Electrical Contractor,Cookstown,ON
+Dbr Electric Ltd.,dbrelectric.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.176,tier3,Electrical Contractor,North Gower,ON
+Rytech Services Inc.,rytech.com,domain.operations@web.com,"Network Solutions, LLC",0.154,tier3,Electrical Contractor,Markham,ON
+New Standard Electrical (Contracting Ltd.),newstandardelectrical.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.242,tier3,Electrical Contractor,Niagara Falls,ON
+Rally Electric Inc.,rallyelectric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.143,tier3,Electrical Contractor,Huntsville,ON
+Limitless Electrical Contracting,limitless-electrical.com,abuse@namecheap.com,"NameCheap, Inc.",0.276,tier3,Electrical Contractor,Ajax,ON
+G1 Electrical Services Inc.,g1electrical.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.267,tier3,Electrical Contractor,Brampton,ON
+Cangrid Services Inc.,cangrid.com,support@namebright.com,DropCatch.com 385 LLC,0.174,tier3,Electrical Contractor,Ottawa,ON
+Vision Power Services,visionpower.com,abuse@hosting.kr,"Megazone Corp., dba HOSTING.KR",0.333,tier3,Electrical Contractor,Pain Court,ON
+G.P. Electrical,gp-electrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.1,tier3,Electrical Contractor,Mississauga,ON
+London Power Corporation Inc,london-power.com,abuse@comlaude.com,Nom-iq Ltd. dba COM LAUDE,0.214,tier3,Electrical Contractor,London,ON
+Stewart Electric,stewart-electric.com,abuse@ionos.com,IONOS SE,0.167,tier3,Electrical Contractor,Wyoming,ON
+Remka Electric,remkaelectric.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.211,tier3,Electrical Contractor,Vankleek Hill,ON
+Diamond Power Group Ltd.,diamondpower.com,abuse@corehub.net,"COREhub, S.R.L.",0.25,tier3,Electrical Contractor,Lanark,ON
+Fowler Construction Company Limited,fowlerconstruction.com,abuse@dynadot.com,Dynadot Inc,0.154,tier3,Electrical Contractor,Bracebridge,ON
+Rank Inc,rank.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.24,tier3,Electrical Contractor,Vaughan,ON
+Cdk Solar Solutions Inc.,cdksolar.com,abuse@rebel.com,Rebel Ltd,0.143,tier3,Electrical Contractor,Kingston,ON
+Power On Electrical Services,poweronelectrical.com,abuse@namesilo.com,"NameSilo, LLC",0.074,tier3,Electrical Contractor,Hamilton,ON
+Local Electric,localelectric.com,abuse@enom.com,"eNom, LLC",0.111,tier3,Electrical Contractor,London,ON
+Lakeshore Electrical Services Inc.,lakeshoreelectrical.com,abuse@domainpeople.com,"DomainPeople, Inc.",0.312,tier3,Electrical Contractor,Belle River,ON
+Mellon Inc,mellon.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.353,tier3,Electrical Contractor,Sarnia,ON
+Fed Electrical,fedelectrical.com,abuse@namesrs.com,Name SRS AB,0.32,tier3,Electrical Contractor,Oshawa,ON
+The Maule Group Inc,themaule.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.105,tier3,Electrical Contractor,Coldwater,ON
+Weber Electric Inc.,weber-electric.com,abuse@ovh.net,OVH sas,0.095,tier3,Electrical Contractor,North York,ON
+J & L Electrical Solutions Ltd.,jlelectrical.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.182,tier3,Electrical Contractor,Elora,ON
+Meeco Technologies Inc.,meecotechnologies.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.143,tier3,Electrical Contractor,Richmond Hill,ON
+Power Group Electrical (Services Inc.),powerelectrical.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.267,tier3,Electrical Contractor,North York,ON
+Mallett Electric Ltd,mallettelectric.com,domain.operations@web.com,"Network Solutions, LLC",0.261,tier3,Electrical Contractor,London,ON
+Howe Electric Ltd.,howeelectric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.296,tier3,Electrical Contractor,Melbourne,ON
+Gateway Electrical Solutions Inc.,gateway-electrical.com,abuse-complaints@squarespace.com,Squarespace Domains LLC,0.27,tier3,Electrical Contractor,North Bay,ON
+Jensen Electric Inc.,jensenelectric.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.293,tier3,Electrical Contractor,Barrie,ON
+Xolar Inc.,xolar.com,abuse@above.com,Above.com Pty Ltd.,0.118,tier3,Electrical Contractor,Campbellford,ON
+Hybrid Electrical Solutions,hybridelectrical.com,abuse@enom.com,"eNom, LLC",0.095,tier3,Electrical Contractor,Toronto,ON
+Nelder Contracting,nelder.com,abuse@register.it,Register SPA,0.333,tier3,Electrical Contractor,New Hamburg,ON
+Southpoint Automation Inc,southpointautomation.com,abuse@promopeople.com,"Promo People, Inc.",0.242,tier3,Electrical Contractor,Leamington,ON
+All In One Contractors Inc.,all-in-one-contractors.com,abuse@namesrs.com,Name SRS AB,0.303,tier3,Electrical Contractor,Alliston,ON
+Roadrunner Electric Ltd,roadrunnerelectric.com,abuse@moniker.com,Moniker Online Services LLC,0.364,tier3,Electrical Contractor,Oshawa,ON
+Georgian Bay Homes And Renovations,georgianbayhomesandrenovations.com,abuse@directnic.com,"DNC Holdings, Inc.",0.054,tier3,Electrical Contractor,Midland,ON
+Dsd Electric Ltd,dsdelectric.com,abuse@namecheap.com,"NameCheap, Inc.",0.19,tier3,Electrical Contractor,Newmarket,ON
+Steady Electric Inc.,steadyelectric.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.353,tier3,Electrical Contractor,Toronto,ON
+A.G. Electrical Contracting Inc.,agelectrical.com,abuse@namesilo.com,"NameSilo, LLC",0.286,tier3,Electrical Contractor,North York,ON
+Capital Electrical Solutions Inc.,capital-electrical.com,domain-abuse@wix.com,Wix.com Ltd.,0.083,tier3,Electrical Contractor,Rockland,ON
+Rick Electrical Inc.,rickelectrical.com,abuse@key-systems.net,Key-Systems GmbH,0.129,tier3,Electrical Contractor,Brampton,ON
+Platinum Power,platinumpower.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.2,tier3,Electrical Contractor,Amherstburg,ON
+Njp Electrical Services,njpelectrical.com,complaint@gname.com,Gname.com Pte. Ltd.,0.308,tier3,Electrical Contractor,Markham,ON
+Citylite Group Inc.,citylite.com,abuse@123-reg.co.uk,123-Reg Limited,0.133,tier3,Electrical Contractor,Scarborough,ON
+Grounded Electrical Co,groundedelectrical.com,registry-abuse@nexigen.digital,Synergy Wholesale Accreditations Pty Ltd,0.218,tier3,Electrical Contractor,Buckhorn,ON
+Charge N Drive Inc.,charge-n-drive.com,en.complaint@cps-datensysteme.de,CPS-Datensysteme GmbH,0.229,tier3,Electrical Contractor,Mississauga,ON
+Ignite Electrical Services,igniteelectrical.com,abuse@dreamscapenetworks.com,Dreamscape Networks International Pte Ltd,0.296,tier3,Electrical Contractor,Mount Forest,ON
+Ecogrid Energy Inc.,ecogrid-energy.com,abuse@registrar.eu,Hosting Concepts B.V. d/b/a Registrar.eu,0.204,tier3,Electrical Contractor,Guelph,ON
+H&I Dynamic Contracting Inc.,hidynamic.com,abuse@ename.com,"eName Technology Co., Ltd.",0.308,tier3,Electrical Contractor,Mississauga,ON
+Padi Electric Inc,padi-electric.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.216,tier3,Electrical Contractor,Aurora,ON
+First Call Electrical,firstcallelectrical.com,abuse@web.com,Domainraker.net LLC,0.171,tier3,Electrical Contractor,Mississauga,ON
+Electromec Service Ltd,electromec.com,abuse@dynadot.com,Dynadot Inc,0.118,tier3,Electrical Contractor,Markham,ON
+Pro Plus,proplus.com,abuse@bluehost.com,Bluehost Inc.,0.375,tier3,Electrical Contractor,Verner,ON
+Hl Electric Ltd,hl-electric.com,DomainAbuse@service.aliyun.com,Alibaba Cloud Computing Ltd. d/b/a HiChina (www.net.cn),0.109,tier3,Electrical Contractor,Toronto,ON
+Berman Electric Inc.,bermanelectric.com,tld-abuse@hostopia.com,Hostopia Canada Corp,0.133,tier3,Electrical Contractor,Campden,ON
+Koski Electric,koskielectric.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.167,tier3,Electrical Contractor,Thunder Bay,ON
+Kcs Electric Inc,kcs-electric.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.235,tier3,Electrical Contractor,Lakeside,ON
+Infinite Electrical Solutions Inc.,infiniteelectrical.com,domainabuse@tucows.com,Tucows Domains Inc.,0.121,tier3,Electrical Contractor,Hamilton,ON
+Dominion Electric,dominionelectric.com,domain.operations@web.com,"Network Solutions, LLC",0.167,tier3,Electrical Contractor,Ottawa,ON
+T&A Electric,taelectric.com,abuse@spaceship.com,"Spaceship, Inc.",0.3,tier3,Electrical Contractor,Timmins,ON
+Coutts Ltd.,coutts.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.296,tier3,Electrical Contractor,Severn,ON
+Goldgen,goldgen.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.19,tier3,Electrical Contractor,Mount Hope,ON
+Vogue Electric Inc.,vogueelectric.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.35,tier3,Electrical Contractor,St Thomas,ON
+G&H Power Electric Inc.,ghpowerelectric.com,abuse@namecheap.com,"NameCheap, Inc.",0.154,tier3,Electrical Contractor,Milton,ON
+Lgv Contracting Limited,lgv.com,abuse@inwx.com,INWX GmbH,0.167,tier3,Electrical Contractor,Aurora,ON
+Kelarus Ltd.,kelarus.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.105,tier3,Electrical Contractor,Milton,ON
+Go Electrical Inc,go-electrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.1,tier3,Electrical Contractor,Stouffville,ON
+Power Zone Electrical Services Inc,powerzoneelectrical.com,abuse@ionos.com,IONOS SE,0.207,tier3,Electrical Contractor,Markham,ON
+Spectre Electric,spectre-electric.com,abuse@joker.com,CSL Computer Service Langenbach GmbH d/b/a joker.com,0.211,tier3,Electrical Contractor,Wilno,ON
+Ground Up Electric,groundupelectric.com,ZYS@GNAME.COM,Gname 095 Inc,0.222,tier3,Electrical Contractor,Orleans,ON
+Precision Powerline Ltd,precisionpowerline.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.333,tier3,Electrical Contractor,Owen Sound,ON
+Illumi Electric Inc,illumielectric.com,DomainAbuse@service.aliyun.com,Alibaba Cloud Computing Ltd. d/b/a HiChina (www.net.cn),0.271,tier3,Electrical Contractor,Brampton,ON
+Leeside Electrical Services Inc,leesideelectrical.com,domain-abuse@wix.com,Wix.com Ltd.,0.167,tier3,Electrical Contractor,Oxford Mills,ON
+Enk Electrical Inc,enkelectrical.com,abuse@bluehost.com,Launchpad.com Inc.,0.231,tier3,Electrical Contractor,Woodbridge,ON
+GPI Contracting Inc,gpi.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.143,tier3,Electrical Contractor,Red Rock,ON
+Northern Light Electrical,northernlightelectrical.com,abuse@domainbox.com,Mesh Digital Limited,0.378,tier3,Electrical Contractor,Woodville,ON
+C.G.A Contracting,cga.com,abuse@dynadot.com,Dynadot Inc,0.2,tier3,Electrical Contractor,Bradford,ON
+Allison Electric,allisonelectric.com,abuse@enom.com,"eNom, LLC",0.1,tier3,Electrical Contractor,Roblin,ON
+Elec Tricks Inc.,elec-tricks.com,abuse@ovh.net,OVH sas,0.222,tier3,Electrical Contractor,Pickering,ON
+Mr Power Tech Inc,mrpowertech.com,abuse@key-systems.net,Key-Systems GmbH,0.276,tier3,Electrical Contractor,Scarborough,ON
+Freedom Technical Services Ltd.,freedomtechnical.com,abuse@register.it,Register SPA,0.345,tier3,Electrical Contractor,Grimsby,ON
+Bde Ltd.,bde.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.125,tier3,Electrical Contractor,Cornwall,ON
+Lebold Electric Inc,leboldelectric.com,domain.operations@web.com,"Domain.com - Network Solutions, LLC",0.176,tier3,Electrical Contractor,Wellesley,ON
+Volta Electric,volta-electric.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.25,tier3,Electrical Contractor,Newmarket,ON
+Bud'S Power Solutions,budspower.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.222,tier3,Electrical Contractor,Beachburg,ON
+Lucas Electric,lucaselectric.com,abuse@inames.co.kr,"Inames Co., Ltd.",0.2,tier3,Electrical Contractor,Millbrook,ON
+Sim Electrical Contracting,simelectrical.com,domain-abuse@wix.com,Wix.com Ltd.,0.2,tier3,Electrical Contractor,Bowmanville,ON
+Simply Smart Solutions Inc,simplysmart.com,abuse@comlaude.com,Nom-iq Ltd. dba COM LAUDE,0.286,tier3,Electrical Contractor,Concord,ON
+Greencore Services Inc,greencore.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.211,tier3,Electrical Contractor,Innisfil,ON
+Mendes Electric,mendeselectric.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.205,tier3,Electrical Contractor,Hamilton,ON
+Ree Electric Ltd,ree-electric.com,supervision@xinnet.com,Xin Net Technology Corporation,0.267,tier3,Electrical Contractor,Brampton,ON
+Jl Electric Inc,jlelectric.com,abuse@ionos.com,IONOS SE,0.211,tier3,Electrical Contractor,Midland,ON
+Refined Electric Inc,refined-electric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.133,tier3,Electrical Contractor,Hamilton,ON
+Northern Sun Solar Group Inc,northernsunsolar.com,abuse-complaints@squarespace.com,Squarespace Domains LLC,0.216,tier3,Electrical Contractor,Murillo,ON
+Geebo Electric Inc,geeboelectric.com,domain-abuse@dreamhost.com,"DreamHost, LLC",0.261,tier3,Electrical Contractor,Scarborough,ON
+Grounded Electrical,groundedelectrical.com,registry-abuse@nexigen.digital,Synergy Wholesale Accreditations Pty Ltd,0.218,tier3,Electrical Contractor,North Bay,ON
+BB & H Solutions Inc,bb-h.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.095,tier3,Electrical Contractor,Aurora,ON
+Star Service Electrical (Contracting Inc),starelectrical.com,abuse@dynadot.com,Dynadot Inc,0.091,tier3,Electrical Contractor,Mississauga,ON
+Mckenna Electrical Services Inc,mckennaelectrical.com,abuse@namecheap.com,"NameCheap, Inc.",0.37,tier3,Electrical Contractor,Toronto,ON
+Guide Electric Ltd,guide-electric.com,domainabuse@35.cn,"Xiamen 35.com Information Co., Ltd.",0.316,tier3,Electrical Contractor,Etobicoke,ON
+K5 Electric Inc,k5electric.com,abuse@promopeople.com,"Promo People, Inc.",0.348,tier3,Electrical Contractor,St Thomas,ON
+Bp Electrical,bpelectrical.com,domainadmin@alpinedomains.com,Alpine Domains Inc.,0.148,tier3,Electrical Contractor,Sudbury,ON
+Ch Electric Inc.,ch-electric.com,domain@oray.com,"Shanghai Best Oray Information S&T Co., Ltd.",0.273,tier3,Electrical Contractor,Avonmore,ON
+Motor City Controls Corp,motorcitycontrols.com,abuse@enom.com,"eNom, LLC",0.087,tier3,Electrical Contractor,Hamilton,ON
+Raj Electricals,rajelectricals.com,abuse@web.com,"Streamline Domains, LLC",0.303,tier3,Electrical Contractor,Kitchener,ON
+Evadam Inc,evadam.com,abuse@registrar.eu,Hosting Concepts B.V. d/b/a Registrar.eu,0.195,tier3,Electrical Contractor,Richmond Hill,ON
+Electroman,electroman.com,misuse@atom.com,Atom.com Domains LLC,0.4,tier3,Electrical Contractor,Stratford,ON
+Dekeyser Electrical,dekeyserelectrical.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.286,tier3,Electrical Contractor,Elora,ON
+Mgd Electric Ltd.,mgdelectric.com,abuse@namejuice.com,"BRANDON GRAY INTERNET SERVICES INC. (dba ""NameJuice.com"")",0.174,tier3,Electrical Contractor,Blezard Valley,ON
+Driedger Electric Ltd,driedgerelectric.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.148,tier3,Electrical Contractor,Port Rowan,ON
+York Pro Contracting Group Inc,york-pro.com,abuse@bluehost.com,Launchpad.com Inc.,0.1,tier3,Electrical Contractor,Toronto,ON
+Ntn Electric,ntn-electric.com,registrar@inet.vn,iNET SOFTWARE COMPANY LIMITED,0.32,tier3,Electrical Contractor,Oro-Medonte,ON
+Tempo Electric Inc,tempoelectric.com,abuse@pairdomains.com,"pair Networks, Inc. d/b/a pair Domains",0.136,tier3,Electrical Contractor,Ancaster,ON
+1 T Contracting,1-t.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.062,tier3,Electrical Contractor,Zephyr,ON
+Iec Group Inc,iec.com,abuse@pavietnam.vn,P.A. Viet Nam Company Limited,0.286,tier3,Electrical Contractor,Brantford,ON
+Custom Gen Inc.,customgen.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.278,tier3,Electrical Contractor,Wasaga Beach,ON
+Axiom Electrical Services Inc,axiom-electrical.com,abuse-complaints@squarespace.com,Squarespace Domains II LLC,0.263,tier3,Electrical Contractor,Ajax,ON
+Pace Power Inc.,pacepower.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.3,tier3,Electrical Contractor,Waterdown,ON
+CTE Electric,cteelectric.com,compliance_abuse@webnic.cc,Web Commerce Communications Limited dba WebNic.cc,0.25,tier3,Electrical Contractor,Seeleys Bay,ON
+Dale Electric,dale-electric.com,domain.operations@web.com,"Network Solutions, LLC",0.3,tier3,Electrical Contractor,Chatham,ON
+Evolute Inc,evolute.com,abuse@corehub.net,"COREhub, S.R.L.",0.222,tier3,Electrical Contractor,Toronto,ON
+Involta Electric Ltd,involtaelectric.com,abuse@porkbun.com,Porkbun LLC,0.087,tier3,Electrical Contractor,Woodbridge,ON
+Meyer Electric,meyer-electric.com,abuse@enom.com,"eNom, LLC",0.111,tier3,Electrical Contractor,Ilderton,ON
+Classic Electric Ltd,classicelectric.com,abuse@uniregistry.com,GoDaddy Online Services Cayman Islands Ltd.,0.178,tier3,Electrical Contractor,Windsor,ON
+Dueck Electric Ltd,dueckelectric.com,abuse@namecheap.com,"NameCheap, Inc.",0.261,tier3,Electrical Contractor,Princeton,ON
+Decast Ltd,decast.com,tld-abuse@nic.ru,"Regional Network Information Center, JSC dba RU-CENTER",0.145,tier3,Electrical Contractor,Utopia,ON
+Sebco Electric Ltd.,sebcoelectric.com,domain-abuse@wix.com,Wix.com Ltd.,0.2,tier3,Electrical Contractor,London,ON
+CN Power Electric Inc.,cnpowerelectric.com,supervision@xinnet.com,Xin Net Technology Corporation,0.343,tier3,Electrical Contractor,Markham,ON
+Auraflow Lighting Inc.,auraflowlighting.com,regcompliance@whc.ca,WHC Online Solutions Inc.,0.296,tier3,Electrical Contractor,North York,ON
+Infinity Generation Services Inc.,infinitygeneration.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.138,tier3,Electrical Contractor,Port Perry,ON
+Sparky Mark Inc.,sparkymark.com,abuse@domainbox.com,Mesh Digital Limited,0.174,tier3,Electrical Contractor,Hamilton,ON
+Sunrise Electrical & Contracting (Services Inc),sunriseelectrical.com,abuse@bigrock.com,BigRock Solutions Ltd,0.16,tier3,Electrical Contractor,Brampton,ON
+Graham'S,grahams.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.286,tier3,Electrical Contractor,Mcgregor,ON
+Hit Electric Inc,hitelectric.com,abuse@spaceship.com,"Spaceship, Inc.",0.19,tier3,Electrical Contractor,North York,ON
+Applied Electrical Services Inc,appliedelectrical.com,domainabuse@tucows.com,Tucows Domains Inc.,0.125,tier3,Electrical Contractor,Windsor,ON
+Zurm Electrical Solutions Inc,zurmelectrical.com,rtr-security-threats@realtimeregister.com,Realtime Register B.V.,0.229,tier3,Electrical Contractor,East York,ON
+Lights Out Electric Limited,lightsoutelectric.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.278,tier3,Electrical Contractor,Whitby,ON
+Home Tech Secure Inc,hometechsecure.com,domainabuse@automattic.com,Automattic Inc.,0.308,tier3,Electrical Contractor,North York,ON
+Phillips Electrical Solutions Inc,phillipselectrical.com,abuse@bluehost.com,Launchpad.com Inc.,0.129,tier3,Electrical Contractor,Burlington,ON
+Energy Electrical Contracting Ltd,energy-electrical.com,abuse@dynadot.com,Dynadot Inc,0.167,tier3,Electrical Contractor,Uxbridge,ON
+S. Electric,s-electric.com,abuse@unstoppabledomains.com,Unstoppable Domains Inc.,0.276,tier3,Electrical Contractor,Mildmay,ON
+Mf Electrical Inc,mf-electrical.com,abuse@ionos.com,IONOS SE,0.19,tier3,Electrical Contractor,Thornhill,ON
+Current Pro,currentpro.com,abuse@namesilo.com,"NameSilo, LLC",0.211,tier3,Electrical Contractor,Strathroy,ON
+Km Electrical,km-electrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.1,tier3,Electrical Contractor,Burlington,ON
+Infiniti Solutions Contracting Ltd,infiniti.com,abusecomplaints@markmonitor.com,MarkMonitor Inc.,0.316,tier3,Electrical Contractor,Scarborough,ON
+The Power Fix,thepowerfix.com,abuse@godaddy.com,"GoDaddy.com, LLC",0.087,tier3,Electrical Contractor,Oakville,ON
+Ecovolt Electric Inc,ecovoltelectric.com,abuse-complaints@squarespace.com,Squarespace Domains LLC,0.229,tier3,Electrical Contractor,Toronto,ON
+Nest Light Corporation,nestlight.com,support@namebright.com,"TurnCommerce, Inc. DBA NameBright.com",0.389,tier3,Electrical Contractor,Richmond Hill,ON
+Switch Electrical Solutions,switch-electrical.com,verisign@virtuadrug.com,Domain Science Kutatasi Szolgaltato Korlatolt Felelossegu Tarsasag,0.241,tier3,Electrical Contractor,Hunstville,ON
+MKP Electric Inc,mkpelectric.com,abuse@ionos.com,IONOS SE,0.2,tier3,Electrical Contractor,Angus,ON
+Dcpro Inc,dcpro.com,abuse@namecheap.com,"NameCheap, Inc.",0.286,tier3,Electrical Contractor,Phelpston,ON
+West Lighting And Electrical Ltd,westlightingandelectrical.com,abuse@registrar.eu,Hosting Concepts B.V. d/b/a Registrar.eu,0.381,tier3,Electrical Contractor,North York,ON
+Jrn Electric,jrn-electric.com,domainabuse@tucows.com,Tucows Domains Inc.,0.077,tier3,Electrical Contractor,Niagara On The Lake,ON
+North Star Electric Ltd,north-star-electric.com,registrar-abuse@cloudflare.com,"Cloudflare, Inc.",0.276,tier3,Electrical Contractor,Milton,ON
+On Point Electric Inc,onpointelectric.com,abuse@webnames.ca,Webnames.ca Inc.,0.222,tier3,Electrical Contractor,Port Sydney,ON
+Elitro Tech Inc.,elitrotech.com,abuse@wildwestdomains.com,"Wild West Domains, LLC",0.143,tier3,Electrical Contractor,Holland Landing,ON
+South West Electric,southwestelectric.com,domain.operations@web.com,"Network Solutions, LLC",0.154,tier3,Electrical Contractor,Kincardine,ON
+Duke Electric Contracting Inc.,dukeelectric.com,abuse@enom.com,"eNom, LLC",0.118,tier3,Electrical Contractor,Pointe Aux Roches,ON
+Grid Point,gridpoint.com,trustandsafety@support.aws.com,"Amazon Registrar, Inc.",0.154,tier3,Electrical Contractor,Mississauga,ON
+G.S Electric,gselectric.com,abuse@key-systems.net,Key-Systems GmbH,0.148,tier3,Electrical Contractor,Bath,ON
+Safevolt Electrical Ltd,safevolt-electrical.com,domain-abuse@wix.com,Wix.com Ltd.,0.08,tier3,Electrical Contractor,Mississauga,ON
+FD Services,fd.com,domainabuse@cscglobal.com,"CSC Corporate Domains, Inc.",0.087,tier3,Electrical Contractor,North York,ON
+V & Z Contracting Inc,vz.com,abuse@fabulous.com,"Sea Wasp, LLC",0.182,tier3,Electrical Contractor,Mississauga,ON
+Calvert Electrical Solutions Inc,calvertelectrical.com,abuse@support.gandi.net,Gandi SAS,0.222,tier3,Electrical Contractor,Mississauga,ON
+Lighthouse Electrical Contracting (Ltd),lighthouseelectrical.com,abuse@melbourneit.com.au,Netregistry Wholesale Pty Ltd,0.348,tier3,Electrical Contractor,Oshawa,ON
+Viper Technologies,vipertechnologies.com,abuse@name.com,"Name.com, Inc.",0.24,tier3,Electrical Contractor,Peterborough,ON
+Aladdin Electric Ltd,aladdin-electric.com,abuse@bluehost.com,Launchpad.com Inc.,0.286,tier3,Electrical Contractor,Port Sydney,ON
+Gk Electrical,gk-electrical.com,abuse@123-reg.co.uk,123-Reg Limited,0.1,tier3,Electrical Contractor,Little Current,ON
+Juice Electric,juice-electric.com,abuse@bigrock.com,BigRock Solutions Ltd,0.19,tier3,Electrical Contractor,Cornwall,ON
+Ser Electric Inc.,serelectric.com,abuse-contact@publicdomainregistry.com,PDR Ltd. d/b/a PublicDomainRegistry.com,0.279,tier3,Electrical Contractor,Kenora,ON
+Elexo Corp,elexo.com,abuse@dreamscapenetworks.com,Dreamscape Networks International Pte Ltd,0.143,tier3,Electrical Contractor,Thornhill,ON
+Sherwonto Inc.,sherwonto.com,abuse@spaceship.com,"Spaceship, Inc.",0.222,tier3,Electrical Contractor,Newmarket,ON
+Spark Forward Electric Ltd,sparkforwardelectric.com,a-b-u-s-e.whois.field@netearthone.com,NetEarth One Inc. d/b/a NetEarth,0.298,tier3,Electrical Contractor,Etobicoke,ON
+Electric Garden,electric-garden.com,abuse-tracker@hostinger.com,"HOSTINGER operations, UAB",0.308,tier3,Electrical Contractor,Coldwater,ON
+Astra Energy Ltd.,astraenergy.com,abuse@dynadot.com,Dynadot Inc,0.211,tier3,Electrical Contractor,Kanata,ON
