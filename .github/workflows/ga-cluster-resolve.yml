@@ -1,0 +1,336 @@
+name: GA Cluster Resolution Engine (Batched)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: "Which tier to process"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - "2"
+          - "3"
+          - all
+      batch_size:
+        description: "Number of leads per batch"
+        required: false
+        default: "500"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  cluster-resolve:
+    name: "Cluster tier=${{ inputs.tier }} offset=${{ matrix.batch }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    concurrency:
+      group: cluster-${{ inputs.tier }}-${{ matrix.batch }}
+      cancel-in-progress: false
+
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        batch: [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Prepare leads database
+        run: |
+          mkdir -p data results
+
+          # Use leads.db if it exists in the repo
+          if [[ -f data/leads.db ]]; then
+            echo "Found existing leads.db"
+          else
+            echo "leads.db not found, reconstructing from CSVs..."
+            python3 << 'PYEOF'
+          import csv
+          import glob
+          import sqlite3
+          import os
+
+          db_path = "data/leads.db"
+          csv_files = sorted(glob.glob("results/*.csv"))
+
+          if not csv_files:
+              print("No CSV files found to reconstruct leads.db")
+              # Create empty db with schema so the script can still run
+              conn = sqlite3.connect(db_path)
+              conn.execute("""
+                  CREATE TABLE IF NOT EXISTS leads (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      email TEXT,
+                      company TEXT,
+                      domain TEXT,
+                      trade TEXT,
+                      city TEXT,
+                      tier INTEGER DEFAULT 0,
+                      cluster_resolved INTEGER DEFAULT 0
+                  )
+              """)
+              conn.commit()
+              conn.close()
+              exit(0)
+
+          conn = sqlite3.connect(db_path)
+          conn.execute("""
+              CREATE TABLE IF NOT EXISTS leads (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  email TEXT,
+                  company TEXT,
+                  domain TEXT,
+                  trade TEXT,
+                  city TEXT,
+                  tier INTEGER DEFAULT 0,
+                  cluster_resolved INTEGER DEFAULT 0
+              )
+          """)
+
+          inserted = 0
+          for fpath in csv_files:
+              with open(fpath, newline="", encoding="utf-8") as f:
+                  reader = csv.DictReader(f)
+                  for row in reader:
+                      conn.execute(
+                          "INSERT OR IGNORE INTO leads (email, company, domain, trade, city) VALUES (?, ?, ?, ?, ?)",
+                          (
+                              row.get("email", ""),
+                              row.get("company", row.get("business_name", "")),
+                              row.get("domain", row.get("website", "")),
+                              row.get("trade", ""),
+                              row.get("city", ""),
+                          ),
+                      )
+                      inserted += 1
+
+          conn.commit()
+          conn.close()
+          print(f"Reconstructed leads.db with {inserted} rows from {len(csv_files)} CSVs")
+          PYEOF
+          fi
+
+      - name: Run GA cluster resolve
+        run: |
+          python scripts/ga_cluster_resolve.py \
+            --db data/leads.db \
+            --tier "${{ inputs.tier }}" \
+            --limit ${{ inputs.batch_size || '500' }} \
+            --offset "${{ matrix.batch }}" \
+            --workers 10
+        timeout-minutes: 20
+
+      - name: Export batch results
+        run: |
+          RESULT_FILE="results/cluster_batch_${{ matrix.batch }}.csv"
+
+          python3 << PYEOF
+          import sqlite3, csv
+
+          conn = sqlite3.connect("data/leads.db")
+          conn.row_factory = sqlite3.Row
+
+          tier_input = "${{ inputs.tier }}"
+          offset = ${{ matrix.batch }}
+          limit = int("${{ inputs.batch_size || '500' }}")
+
+          if tier_input == "all":
+              query = "SELECT * FROM leads WHERE cluster_resolved = 1 LIMIT ? OFFSET ?"
+              params = (limit, offset)
+          else:
+              query = "SELECT * FROM leads WHERE cluster_resolved = 1 AND tier = ? LIMIT ? OFFSET ?"
+              params = (int(tier_input), limit, offset)
+
+          cursor = conn.execute(query, params)
+          rows = cursor.fetchall()
+
+          if rows:
+              with open("${RESULT_FILE}", "w", newline="", encoding="utf-8") as f:
+                  writer = csv.writer(f)
+                  writer.writerow(rows[0].keys())
+                  writer.writerows(rows)
+              print(f"Exported {len(rows)} resolved leads to ${RESULT_FILE}")
+          else:
+              print("No resolved leads for this batch.")
+
+          conn.close()
+          PYEOF
+
+      - name: Commit and push results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          RESULT_FILE="results/cluster_batch_${{ matrix.batch }}.csv"
+
+          if [[ ! -f "${RESULT_FILE}" ]]; then
+            echo "No results file produced, skipping commit."
+            exit 0
+          fi
+
+          ROW_COUNT=$(wc -l < "${RESULT_FILE}")
+          if [[ "${ROW_COUNT}" -le 1 ]]; then
+            echo "Results file is empty (header only), skipping commit."
+            exit 0
+          fi
+
+          git add "${RESULT_FILE}"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "cluster: tier=${{ inputs.tier }} batch ${{ matrix.batch }} [${TIMESTAMP}] - $((ROW_COUNT - 1)) emails"
+
+          # Retry push up to 5 times to handle concurrent push conflicts
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying in $((attempt * 2))s..."
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "cluster-batch-${{ matrix.batch }}"
+          path: "results/cluster_batch_${{ matrix.batch }}.csv"
+          retention-days: 30
+          if-no-files-found: ignore
+
+  aggregate:
+    name: Aggregate cluster results
+    needs: cluster-resolve
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-results
+          pattern: "cluster-batch-*"
+          merge-multiple: true
+
+      - name: Merge and deduplicate CSVs
+        run: |
+          mkdir -p results
+
+          if ! ls downloaded-results/*.csv 1>/dev/null 2>&1; then
+            echo "No CSV files found to aggregate."
+            exit 0
+          fi
+
+          # Copy individual batch results
+          cp downloaded-results/*.csv results/
+
+          python3 << 'PYEOF'
+          import csv
+          import glob
+
+          csv_files = sorted(glob.glob("results/cluster_batch_*.csv"))
+          if not csv_files:
+              print("No cluster batch CSV files found.")
+              exit(0)
+
+          seen_emails = set()
+          rows = []
+          header = None
+
+          for fpath in csv_files:
+              with open(fpath, newline="", encoding="utf-8") as f:
+                  reader = csv.reader(f)
+                  file_header = next(reader, None)
+                  if file_header is None:
+                      continue
+                  if header is None:
+                      header = file_header
+                      # Find email column index
+                      email_col = None
+                      for i, col in enumerate(header):
+                          if col.lower().strip() in ("email", "e-mail", "contact_email"):
+                              email_col = i
+                              break
+                  for row in reader:
+                      if email_col is not None and email_col < len(row):
+                          email = row[email_col].strip().lower()
+                          if email and email in seen_emails:
+                              continue
+                          if email:
+                              seen_emails.add(email)
+                      rows.append(row)
+
+          outpath = "results/cluster_all_emails.csv"
+          with open(outpath, "w", newline="", encoding="utf-8") as f:
+              writer = csv.writer(f)
+              if header:
+                  writer.writerow(header)
+              writer.writerows(rows)
+
+          print(f"Total unique emails: {len(rows)}")
+          print(f"Duplicates removed by email column")
+          PYEOF
+
+      - name: Commit aggregated results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add results/
+
+          if git diff --cached --quiet; then
+            echo "No new aggregated results to commit."
+            exit 0
+          fi
+
+          TOTAL=0
+          if [[ -f results/cluster_all_emails.csv ]]; then
+            TOTAL=$(( $(wc -l < results/cluster_all_emails.csv) - 1 ))
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "cluster: aggregate ${TOTAL} unique emails [${TIMESTAMP}]"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            sleep $((attempt * 2))
+          done
