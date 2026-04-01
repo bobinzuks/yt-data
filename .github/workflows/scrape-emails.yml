@@ -1,0 +1,255 @@
+name: Scrape Business Emails by Trade & City
+
+on:
+  workflow_dispatch:
+    inputs:
+      trade_override:
+        description: "Override trade (leave empty for full matrix)"
+        required: false
+        default: ""
+        type: string
+      city_override:
+        description: "Override city (leave empty for full matrix)"
+        required: false
+        default: ""
+        type: string
+  push:
+    branches:
+      - trigger-scrape
+
+permissions:
+  contents: write
+
+env:
+  USER_AGENTS: |
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+    Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0
+    Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36
+    Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0
+    Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0
+    Mozilla/5.0 (Macintosh; Intel Mac OS X 14.3; rv:123.0) Gecko/20100101 Firefox/123.0
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 OPR/107.0.0.0
+    Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36
+
+jobs:
+  scrape:
+    name: "${{ matrix.trade }} - ${{ matrix.city }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    concurrency:
+      group: scrape-${{ matrix.trade }}
+      cancel-in-progress: false
+
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        trade:
+          - painters
+          - plumbers
+          - electricians
+          - hvac
+          - roofers
+          - carpenters
+          - landscapers
+          - movers
+          - cleaners
+        city:
+          - Vancouver
+          - Surrey
+          - Burnaby
+          - Victoria
+          - Kelowna
+          - Kamloops
+          - Abbotsford
+          - Nanaimo
+          - Calgary
+          - Edmonton
+          - Toronto
+          - Ottawa
+          - Winnipeg
+          - Halifax
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Check for trade/city override
+        id: check-override
+        run: |
+          SKIP="false"
+          if [[ -n "${{ github.event.inputs.trade_override }}" && "${{ matrix.trade }}" != "${{ github.event.inputs.trade_override }}" ]]; then
+            SKIP="true"
+          fi
+          if [[ -n "${{ github.event.inputs.city_override }}" && "${{ matrix.city }}" != "${{ github.event.inputs.city_override }}" ]]; then
+            SKIP="true"
+          fi
+          echo "skip=${SKIP}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Python 3.11
+        if: steps.check-override.outputs.skip == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        if: steps.check-override.outputs.skip == 'false'
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 lxml
+
+      - name: Select user agent
+        if: steps.check-override.outputs.skip == 'false'
+        id: ua
+        run: |
+          readarray -t UA_LIST <<< "$USER_AGENTS"
+          # Pick a user agent based on a hash of trade+city for deterministic but varied selection
+          HASH=$(echo -n "${{ matrix.trade }}-${{ matrix.city }}" | md5sum | cut -c1-8)
+          INDEX=$(( 16#${HASH} % ${#UA_LIST[@]} ))
+          SELECTED_UA="${UA_LIST[$INDEX]}"
+          echo "user_agent=${SELECTED_UA}" >> "$GITHUB_OUTPUT"
+          echo "Selected UA index ${INDEX}: ${SELECTED_UA}"
+
+      - name: Create results directory
+        if: steps.check-override.outputs.skip == 'false'
+        run: mkdir -p results
+
+      - name: Run scraper
+        if: steps.check-override.outputs.skip == 'false'
+        env:
+          SCRAPER_USER_AGENT: ${{ steps.ua.outputs.user_agent }}
+          SCRAPER_DELAY_MIN: "2"
+          SCRAPER_DELAY_MAX: "5"
+        run: |
+          python scripts/scrape_trade_city.py \
+            --trade "${{ matrix.trade }}" \
+            --city "${{ matrix.city }}" \
+            --user-agent "${SCRAPER_USER_AGENT}" \
+            --delay-min "${SCRAPER_DELAY_MIN}" \
+            --delay-max "${SCRAPER_DELAY_MAX}" \
+            --output "results/${{ matrix.trade }}_${{ matrix.city }}.csv"
+        timeout-minutes: 25
+
+      - name: Commit and push results
+        if: steps.check-override.outputs.skip == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          RESULT_FILE="results/${{ matrix.trade }}_${{ matrix.city }}.csv"
+
+          if [[ ! -f "${RESULT_FILE}" ]]; then
+            echo "No results file produced, skipping commit."
+            exit 0
+          fi
+
+          ROW_COUNT=$(wc -l < "${RESULT_FILE}")
+          if [[ "${ROW_COUNT}" -le 1 ]]; then
+            echo "Results file is empty (header only), skipping commit."
+            exit 0
+          fi
+
+          git add "${RESULT_FILE}"
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "scrape: ${{ matrix.trade }} in ${{ matrix.city }} [${TIMESTAMP}] - $((ROW_COUNT - 1)) leads"
+
+          # Retry push up to 5 times to handle concurrent push conflicts
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying in $((attempt * 2))s..."
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload results artifact
+        if: steps.check-override.outputs.skip == 'false' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "results-${{ matrix.trade }}-${{ matrix.city }}"
+          path: "results/${{ matrix.trade }}_${{ matrix.city }}.csv"
+          retention-days: 30
+          if-no-files-found: ignore
+
+  aggregate:
+    name: Aggregate results
+    needs: scrape
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-results
+          pattern: "results-*"
+          merge-multiple: true
+
+      - name: Merge CSVs into master file
+        run: |
+          mkdir -p results
+
+          # Copy individual results
+          if ls downloaded-results/*.csv 1>/dev/null 2>&1; then
+            cp downloaded-results/*.csv results/
+
+            # Build merged CSV with header from first file
+            FIRST=true
+            for f in results/*.csv; do
+              if $FIRST; then
+                head -1 "$f" > results/all_leads.csv
+                FIRST=false
+              fi
+              tail -n +2 "$f" >> results/all_leads.csv
+            done
+
+            TOTAL=$(( $(wc -l < results/all_leads.csv) - 1 ))
+            echo "Total leads aggregated: ${TOTAL}"
+          else
+            echo "No CSV files found to aggregate."
+            exit 0
+          fi
+
+      - name: Commit aggregated results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add results/
+
+          if git diff --cached --quiet; then
+            echo "No new aggregated results to commit."
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          TOTAL=$(( $(wc -l < results/all_leads.csv) - 1 ))
+          git commit -m "scrape: aggregate ${TOTAL} total leads [${TIMESTAMP}]"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            sleep $((attempt * 2))
+          done
