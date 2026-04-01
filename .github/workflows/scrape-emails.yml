@@ -253,3 +253,61 @@ jobs:
             fi
             sleep $((attempt * 2))
           done
+
+  verify:
+    name: SMTP Verify Emails
+    needs: aggregate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          ref: main
+
+      - name: Pull latest
+        run: git pull origin main
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install dnspython
+
+      - name: Run SMTP verification
+        run: |
+          if [[ ! -f results/all_leads.csv ]]; then
+            echo "No leads to verify"
+            exit 0
+          fi
+          python scripts/verify_emails.py results/all_leads.csv
+        timeout-minutes: 40
+
+      - name: Commit verification results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add data/ results/
+          if git diff --cached --quiet; then
+            echo "No verification results to commit."
+            exit 0
+          fi
+
+          VERIFIED=$(grep -c ",verified," data/verified-emails.csv 2>/dev/null || echo 0)
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          git commit -m "verify: ${VERIFIED} emails verified [${TIMESTAMP}]"
+
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin main || true
+            if git push origin HEAD:main; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            sleep $((attempt * 2))
+          done
