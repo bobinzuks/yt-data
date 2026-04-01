@@ -84,13 +84,31 @@ jobs:
         id: check-override
         run: |
           SKIP="false"
-          if [[ -n "${{ github.event.inputs.trade_override }}" && "${{ matrix.trade }}" != "${{ github.event.inputs.trade_override }}" ]]; then
-            SKIP="true"
+          TRADE="${{ matrix.trade }}"
+          # If trade_override is set AND it's not in the matrix, only run from the first matrix slot
+          if [[ -n "${{ github.event.inputs.trade_override }}" ]]; then
+            OVERRIDE="${{ github.event.inputs.trade_override }}"
+            # Check if override matches a matrix trade
+            case "${{ matrix.trade }}" in
+              painters|plumbers|electricians|hvac|roofers|carpenters|landscapers|movers|cleaners)
+                # Matrix trade: skip unless it matches the override
+                if [[ "${{ matrix.trade }}" != "${OVERRIDE}" ]]; then
+                  SKIP="true"
+                fi
+                ;;
+              *) SKIP="true" ;;
+            esac
+            # For non-matrix trades, hijack the first matrix slot (painters)
+            if [[ "${{ matrix.trade }}" == "painters" && "$SKIP" == "true" ]]; then
+              SKIP="false"
+              TRADE="${OVERRIDE}"
+            fi
           fi
           if [[ -n "${{ github.event.inputs.city_override }}" && "${{ matrix.city }}" != "${{ github.event.inputs.city_override }}" ]]; then
             SKIP="true"
           fi
           echo "skip=${SKIP}" >> "$GITHUB_OUTPUT"
+          echo "trade=${TRADE}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Python 3.11
         if: steps.check-override.outputs.skip == 'false'
@@ -127,13 +145,14 @@ jobs:
           SCRAPER_DELAY_MIN: "2"
           SCRAPER_DELAY_MAX: "5"
         run: |
+          TRADE="${{ steps.check-override.outputs.trade }}"
           python scripts/scrape_trade_city.py \
-            --trade "${{ matrix.trade }}" \
+            --trade "${TRADE}" \
             --city "${{ matrix.city }}" \
             --user-agent "${SCRAPER_USER_AGENT}" \
             --delay-min "${SCRAPER_DELAY_MIN}" \
             --delay-max "${SCRAPER_DELAY_MAX}" \
-            --output "results/${{ matrix.trade }}_${{ matrix.city }}.csv"
+            --output "results/${TRADE}_${{ matrix.city }}.csv"
         timeout-minutes: 25
 
       - name: Commit and push results
@@ -142,7 +161,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          RESULT_FILE="results/${{ matrix.trade }}_${{ matrix.city }}.csv"
+          TRADE="${{ steps.check-override.outputs.trade }}"
+          RESULT_FILE="results/${TRADE}_${{ matrix.city }}.csv"
 
           if [[ ! -f "${RESULT_FILE}" ]]; then
             echo "No results file produced, skipping commit."
@@ -163,7 +183,8 @@ jobs:
           fi
 
           TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
-          git commit -m "scrape: ${{ matrix.trade }} in ${{ matrix.city }} [${TIMESTAMP}] - $((ROW_COUNT - 1)) leads"
+          TRADE="${{ steps.check-override.outputs.trade }}"
+          git commit -m "scrape: ${TRADE} in ${{ matrix.city }} [${TIMESTAMP}] - $((ROW_COUNT - 1)) leads"
 
           # Retry push up to 5 times to handle concurrent push conflicts
           for attempt in 1 2 3 4 5; do
@@ -180,8 +201,8 @@ jobs:
         if: steps.check-override.outputs.skip == 'false' && always()
         uses: actions/upload-artifact@v4
         with:
-          name: "results-${{ matrix.trade }}-${{ matrix.city }}"
-          path: "results/${{ matrix.trade }}_${{ matrix.city }}.csv"
+          name: "results-${{ steps.check-override.outputs.trade }}-${{ matrix.city }}"
+          path: "results/${{ steps.check-override.outputs.trade }}_${{ matrix.city }}.csv"
           retention-days: 30
           if-no-files-found: ignore
 
