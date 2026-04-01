@@ -1,0 +1,462 @@
+name: Common Crawl WAT — GA Cluster Extraction
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: "Batch A (0-4) or B (5-9)"
+        required: true
+        default: "A"
+        type: choice
+        options: [A, B]
+      crawl:
+        description: "Crawl ID"
+        required: false
+        default: "CC-MAIN-2026-12"
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  CRAWL: ${{ github.event.inputs.crawl || 'CC-MAIN-2026-12' }}
+
+jobs:
+  wat-extract:
+    name: "WAT extract ${{ matrix.shard }}/5"
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        shard: [0, 1, 2, 3, 4]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Restore processed paths cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: .processed_wat_paths
+          key: wat-processed-${{ env.CRAWL }}-${{ github.event.inputs.batch }}
+          restore-keys: wat-processed-${{ env.CRAWL }}-
+
+      - name: Init processed set
+        run: touch .processed_wat_paths
+
+      - name: Download WAT paths index
+        run: |
+          curl -sL "https://data.commoncrawl.org/crawl-data/${{ env.CRAWL }}/wat.paths.gz" | gunzip > /tmp/wat_paths.txt
+          TOTAL=$(wc -l < /tmp/wat_paths.txt)
+          echo "Total WAT files: $TOTAL"
+
+      - name: Compute shard range
+        id: range
+        run: |
+          TOTAL=$(wc -l < /tmp/wat_paths.txt)
+          BATCH_OFFSET=$([[ "${{ github.event.inputs.batch }}" == "B" ]] && echo $(( TOTAL / 2 )) || echo 0)
+          HALF=$(( TOTAL / 2 ))
+          SHARD_SIZE=$(( HALF / 5 ))
+          START=$(( BATCH_OFFSET + ${{ matrix.shard }} * SHARD_SIZE ))
+          END=$(( START + SHARD_SIZE ))
+          [[ ${{ matrix.shard }} -eq 4 ]] && END=$(( BATCH_OFFSET + HALF ))
+          echo "start=$START" >> "$GITHUB_OUTPUT"
+          echo "end=$END" >> "$GITHUB_OUTPUT"
+          echo "Shard ${{ matrix.shard }}: lines $START-$END ($((END - START)) WAT files)"
+
+      - name: Stream WAT files and extract .ca GA/GTM/Pixel IDs
+        timeout-minutes: 300
+        run: |
+          python3 << 'PYEOF'
+          import gzip, io, json, re, sys, os, urllib.request
+
+          RE_GA  = re.compile(r'(?:UA-\d{4,10}-\d{1,4}|G-[A-Z0-9]{10,12})')
+          RE_GTM = re.compile(r'GTM-[A-Z0-9]{6,8}')
+          RE_PIX = re.compile(r"fbq\('init',\s*'(\d+)'")
+          RE_EMAIL = re.compile(r'mailto:([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})')
+
+          paths = open("/tmp/wat_paths.txt").read().strip().split("\n")
+          start = int("${{ steps.range.outputs.start }}")
+          end   = int("${{ steps.range.outputs.end }}")
+          shard_paths = paths[start:end]
+
+          processed = set()
+          if os.path.exists(".processed_wat_paths"):
+              processed = set(open(".processed_wat_paths").read().strip().split("\n"))
+
+          clusters = {}   # tracking_id -> set(domain)
+          domains  = {}   # domain -> {ga, gtm, pixel, emails}
+          stats = {"wat_files": 0, "records": 0, "ca_domains": 0, "ids_found": 0}
+
+          BASE = "https://data.commoncrawl.org"
+
+          for pi, path in enumerate(shard_paths):
+              path = path.strip()
+              if not path or path in processed:
+                  continue
+
+              url = f"{BASE}/{path}"
+              print(f"[{pi+1}/{len(shard_paths)}] {path}", file=sys.stderr, flush=True)
+
+              try:
+                  req = urllib.request.Request(url, headers={"User-Agent": "email-velocity/1.0"})
+                  resp = urllib.request.urlopen(req, timeout=300)
+                  gz = gzip.GzipFile(fileobj=resp)
+
+                  buf = []
+                  target_url = ""
+                  in_json = False
+                  depth = 0
+
+                  for raw in gz:
+                      line = raw.decode(errors="replace")
+
+                      if line.startswith("WARC-Target-URI:"):
+                          target_url = line.split(":", 1)[1].strip()
+                          continue
+
+                      if not in_json:
+                          if line.lstrip().startswith("{"):
+                              in_json = True
+                              depth = 0
+                              buf = []
+                          else:
+                              continue
+
+                      if in_json:
+                          buf.append(line)
+                          depth += line.count("{") - line.count("}")
+                          if depth <= 0:
+                              text = "".join(buf)
+                              buf = []
+                              in_json = False
+                              stats["records"] += 1
+
+                              rec_url = target_url or ""
+                              target_url = ""
+
+                              if not rec_url:
+                                  try:
+                                      p = json.loads(text)
+                                      rec_url = p.get("Envelope", {}).get("WARC-Header-Metadata", {}).get("WARC-Target-URI", "")
+                                  except: pass
+
+                              if not rec_url:
+                                  continue
+
+                              try:
+                                  host = rec_url.split("//")[-1].split("/")[0].split(":")[0].lower()
+                              except:
+                                  continue
+
+                              if not host.endswith(".ca"):
+                                  continue
+
+                              domain = host.removeprefix("www.")
+                              stats["ca_domains"] += 1
+
+                              ga  = RE_GA.findall(text)
+                              gtm = RE_GTM.findall(text)
+                              pix = RE_PIX.findall(text)
+                              emails = RE_EMAIL.findall(text)
+
+                              if not (ga or gtm or pix or emails):
+                                  continue
+
+                              stats["ids_found"] += 1
+
+                              if domain not in domains:
+                                  domains[domain] = {"ga": set(), "gtm": set(), "pixel": set(), "emails": set()}
+                              for g in ga:
+                                  domains[domain]["ga"].add(g)
+                                  clusters.setdefault(g, set()).add(domain)
+                              for g in gtm:
+                                  domains[domain]["gtm"].add(g)
+                                  clusters.setdefault(g, set()).add(domain)
+                              for p in pix:
+                                  domains[domain]["pixel"].add(p)
+                                  clusters.setdefault(p, set()).add(domain)
+                              domains[domain]["emails"].update(e.lower() for e in emails)
+
+                  gz.close()
+                  resp.close()
+
+              except Exception as e:
+                  print(f"  ERR: {e}", file=sys.stderr, flush=True)
+
+              processed.add(path)
+              stats["wat_files"] += 1
+
+              if stats["wat_files"] % 5 == 0:
+                  print(f"  Progress: {stats['wat_files']} WAT files, {stats['ca_domains']} .ca, {stats['ids_found']} with IDs, {len(domains)} unique domains", file=sys.stderr, flush=True)
+                  with open(".processed_wat_paths", "w") as f:
+                      f.write("\n".join(sorted(processed)))
+
+          # Save processed paths for cache
+          with open(".processed_wat_paths", "w") as f:
+              f.write("\n".join(sorted(processed)))
+
+          # Convert sets to lists for JSON
+          out_clusters = {k: sorted(v) for k, v in clusters.items() if len(v) >= 1}
+          out_domains = {}
+          for d, info in domains.items():
+              out_domains[d] = {k: sorted(v) for k, v in info.items()}
+
+          result = {"clusters": out_clusters, "domains": out_domains, "stats": stats}
+
+          os.makedirs("results", exist_ok=True)
+          with open(f"results/clusters_${{ matrix.shard }}.json", "w") as f:
+              json.dump(result, f)
+
+          print(json.dumps(stats, indent=2), file=sys.stderr)
+          PYEOF
+
+      - name: Upload shard artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "clusters-${{ matrix.shard }}"
+          path: "results/clusters_${{ matrix.shard }}.json"
+          retention-days: 7
+
+      - name: Save processed paths cache
+        uses: actions/cache/save@v4
+        with:
+          path: .processed_wat_paths
+          key: wat-processed-${{ env.CRAWL }}-${{ github.event.inputs.batch }}-${{ matrix.shard }}-${{ github.run_number }}
+
+  cluster-merge:
+    name: Merge cluster graph
+    needs: wat-extract
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Download all shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: shards
+          pattern: "clusters-*"
+          merge-multiple: true
+
+      - name: Merge into unified graph
+        run: |
+          python3 << 'PYEOF'
+          import json, glob, os
+
+          merged_clusters = {}
+          merged_domains = {}
+          total_stats = {"wat_files": 0, "records": 0, "ca_domains": 0, "ids_found": 0}
+
+          for f in sorted(glob.glob("shards/clusters_*.json")):
+              print(f"Loading {f}")
+              data = json.load(open(f))
+
+              for tid, doms in data.get("clusters", {}).items():
+                  merged_clusters.setdefault(tid, set()).update(doms)
+
+              for domain, info in data.get("domains", {}).items():
+                  if domain not in merged_domains:
+                      merged_domains[domain] = {"ga": set(), "gtm": set(), "pixel": set(), "emails": set()}
+                  for k in ("ga", "gtm", "pixel", "emails"):
+                      merged_domains[domain][k].update(info.get(k, []))
+
+              for k in total_stats:
+                  total_stats[k] += data.get("stats", {}).get(k, 0)
+
+          # Convert for JSON
+          out = {
+              "clusters": {k: sorted(v) for k, v in merged_clusters.items()},
+              "domains": {d: {k: sorted(v) for k, v in info.items()} for d, info in merged_domains.items()},
+              "stats": total_stats,
+              "multi_domain_clusters": {k: sorted(v) for k, v in merged_clusters.items() if len(v) >= 2}
+          }
+
+          os.makedirs("results", exist_ok=True)
+          with open("results/full_cluster_graph.json", "w") as f:
+              json.dump(out, f)
+
+          mc = len(out["multi_domain_clusters"])
+          print(f"Merged: {len(merged_domains)} domains, {len(merged_clusters)} tracking IDs, {mc} multi-domain clusters")
+          print(json.dumps(total_stats, indent=2))
+          PYEOF
+
+      - name: Upload merged graph
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-cluster-graph
+          path: results/full_cluster_graph.json
+          retention-days: 7
+
+      - name: Commit graph
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/full_cluster_graph.json
+          git diff --cached --quiet || git commit -m "cc-wat: merged cluster graph [batch ${{ github.event.inputs.batch }}]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || true
+            git push origin HEAD:main && break || sleep $((i * 2))
+          done
+
+  email-propagate:
+    name: Propagate emails across clusters
+    needs: cluster-merge
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Download cluster graph
+        uses: actions/download-artifact@v4
+        with:
+          name: full-cluster-graph
+          path: .
+
+      - name: Propagate emails
+        run: |
+          python3 << 'PYEOF'
+          import json, os
+
+          data = json.load(open("full_cluster_graph.json"))
+          clusters = data.get("multi_domain_clusters", {})
+          domains = data.get("domains", {})
+
+          propagated = 0
+          enriched_domains = []
+
+          for tid, doms in clusters.items():
+              # Collect all emails from cluster members
+              cluster_emails = set()
+              for d in doms:
+                  if d in domains:
+                      cluster_emails.update(domains[d].get("emails", []))
+
+              if not cluster_emails:
+                  continue
+
+              # Propagate to members without email
+              for d in doms:
+                  if d in domains and not domains[d].get("emails"):
+                      domains[d]["emails"] = sorted(cluster_emails)
+                      propagated += 1
+                      enriched_domains.append({"domain": d, "emails": sorted(cluster_emails), "via_cluster": tid})
+
+          # Try to POST to VPS enrich endpoint (best effort)
+          if enriched_domains:
+              try:
+                  import urllib.request
+                  req = urllib.request.Request(
+                      "http://147.93.113.37:8002/internal/enrich",
+                      data=json.dumps(enriched_domains).encode(),
+                      headers={"Content-Type": "application/json"},
+                      method="POST"
+                  )
+                  urllib.request.urlopen(req, timeout=10)
+                  print(f"POSTed {len(enriched_domains)} enriched domains to VPS")
+              except Exception as e:
+                  print(f"VPS POST skipped: {e}")
+
+          report = {
+              "multi_domain_clusters": len(clusters),
+              "emails_propagated": propagated,
+              "enriched_domains": len(enriched_domains),
+              "sample": enriched_domains[:20]
+          }
+
+          os.makedirs("results", exist_ok=True)
+          with open("results/propagation_report.json", "w") as f:
+              json.dump(report, f, indent=2)
+
+          print(json.dumps(report, indent=2))
+          PYEOF
+
+      - name: Upload propagation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: propagation-report
+          path: results/propagation_report.json
+          retention-days: 7
+
+      - name: Commit report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/propagation_report.json
+          git diff --cached --quiet || git commit -m "cc-wat: email propagation report [batch ${{ github.event.inputs.batch }}]"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || true
+            git push origin HEAD:main && break || sleep $((i * 2))
+          done
+
+  report:
+    name: Summary report
+    needs: [wat-extract, cluster-merge, email-propagate]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate summary
+        run: |
+          python3 << 'PYEOF'
+          import json, glob, os
+
+          total_wat = total_records = total_ca = total_ids = 0
+          total_domains = 0
+          total_clusters = 0
+          total_propagated = 0
+
+          for f in glob.glob("artifacts/clusters_*.json"):
+              data = json.load(open(f))
+              s = data.get("stats", {})
+              total_wat += s.get("wat_files", 0)
+              total_records += s.get("records", 0)
+              total_ca += s.get("ca_domains", 0)
+              total_ids += s.get("ids_found", 0)
+
+          if os.path.exists("artifacts/full_cluster_graph.json"):
+              g = json.load(open("artifacts/full_cluster_graph.json"))
+              total_domains = len(g.get("domains", {}))
+              total_clusters = len(g.get("multi_domain_clusters", {}))
+
+          if os.path.exists("artifacts/propagation_report.json"):
+              p = json.load(open("artifacts/propagation_report.json"))
+              total_propagated = p.get("emails_propagated", 0)
+
+          summary = f"""
+          ## Common Crawl WAT — Batch Summary
+          | Metric | Count |
+          |--------|-------|
+          | WAT files processed | {total_wat} |
+          | Total WARC records | {total_records:,} |
+          | .ca domain hits | {total_ca:,} |
+          | Domains with tracking IDs | {total_ids:,} |
+          | Unique domains indexed | {total_domains:,} |
+          | Multi-domain clusters | {total_clusters} |
+          | Emails propagated | {total_propagated} |
+          """
+          print(summary)
+
+          with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/null"), "w") as f:
+              f.write(summary)
+          PYEOF
