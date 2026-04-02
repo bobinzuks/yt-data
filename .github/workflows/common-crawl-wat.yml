@@ -230,13 +230,16 @@ jobs:
           PYEOF
 
       - name: Upload shard artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: "clusters-${{ matrix.shard }}"
           path: "results/clusters_${{ matrix.shard }}.json"
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Save processed paths cache
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: .processed_wat_paths
