@@ -73,7 +73,7 @@ jobs:
           echo "Shard ${{ matrix.shard }}: lines $START-$END ($((END - START)) WAT files)"
 
       - name: Stream WAT files and extract .ca GA/GTM/Pixel IDs
-        timeout-minutes: 300
+        timeout-minutes: 290
         run: |
           python3 << 'PYEOF'
           import gzip, io, json, re, sys, os, urllib.request
@@ -199,6 +199,16 @@ jobs:
                   print(f"  Progress: {stats['wat_files']} WAT files, {stats['ca_domains']} .ca, {stats['ids_found']} with IDs, {len(domains)} unique domains", file=sys.stderr, flush=True)
                   with open(".processed_wat_paths", "w") as f:
                       f.write("\n".join(sorted(processed)))
+
+              # Incremental save every 500 WAT files — survives timeout
+              if stats["wat_files"] % 500 == 0:
+                  _oc = {k: sorted(v) for k, v in clusters.items() if len(v) >= 1}
+                  _od = {d: {k: sorted(v) for k, v in info.items()} for d, info in domains.items()}
+                  _r = {"clusters": _oc, "domains": _od, "stats": dict(stats)}
+                  os.makedirs("results", exist_ok=True)
+                  with open(f"results/clusters_${{ matrix.shard }}.json", "w") as f:
+                      json.dump(_r, f)
+                  print(f"  SAVED checkpoint: {len(domains)} domains, {len(_oc)} cluster IDs", file=sys.stderr, flush=True)
 
           # Save processed paths for cache
           with open(".processed_wat_paths", "w") as f:
