@@ -1,0 +1,295 @@
+name: Rust Web-Mapper (20-Shard Parallel Fetch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      domains_per_runner:
+        description: "Domains each runner should fetch"
+        required: false
+        default: "5000"
+        type: string
+      cycles:
+        description: "Number of crawl cycles per runner"
+        required: false
+        default: "1"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build web-mapper binary
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Install Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-mapper-binary
+          path: target/release/web-mapper
+          retention-days: 1
+
+  fetch:
+    name: "Fetch shard ${{ matrix.shard }}/20"
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    concurrency:
+      group: web-mapper-shard-${{ matrix.shard }}
+      cancel-in-progress: false
+
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Download web-mapper binary
+        uses: actions/download-artifact@v4
+        with:
+          name: web-mapper-binary
+          path: .
+
+      - name: Make binary executable
+        run: chmod +x ./web-mapper
+
+      - name: Prepare data directory
+        run: |
+          mkdir -p data results
+
+          # Use web_map.db from the repo if it exists
+          if [[ -f data/web_map.db ]]; then
+            echo "Found existing web_map.db ($(stat -c%s data/web_map.db) bytes)"
+          else
+            echo "No web_map.db found — mapper will create a fresh one"
+          fi
+
+      - name: Run web-mapper fetch (shard ${{ matrix.shard }})
+        run: |
+          echo "=== Shard ${{ matrix.shard }} of 20 ==="
+          echo "Domains per runner: ${{ inputs.domains_per_runner || '5000' }}"
+          echo "Cycles: ${{ inputs.cycles || '1' }}"
+
+          ./web-mapper \
+            --fetch ${{ inputs.domains_per_runner || '5000' }} \
+            --shard ${{ matrix.shard }} \
+            --total-shards 20 \
+            --cycles ${{ inputs.cycles || '1' }} \
+            --db data/web_map.db
+        timeout-minutes: 320
+
+      - name: Export shard results to JSON
+        run: |
+          SHARD_FILE="results/shard_${{ matrix.shard }}_results.json"
+
+          ./web-mapper \
+            --export-shard "${SHARD_FILE}" \
+            --shard ${{ matrix.shard }} \
+            --total-shards 20 \
+            --db data/web_map.db
+
+          if [[ -f "${SHARD_FILE}" ]]; then
+            SIZE=$(stat -c%s "${SHARD_FILE}")
+            echo "Exported shard ${{ matrix.shard }} results: ${SIZE} bytes"
+          else
+            echo "No results to export for shard ${{ matrix.shard }}"
+            echo '{"shard": ${{ matrix.shard }}, "domains": [], "tracking_ids": [], "emails": [], "outlinks": []}' > "${SHARD_FILE}"
+          fi
+
+      - name: Upload shard artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "shard-${{ matrix.shard }}-results"
+          path: "results/shard_${{ matrix.shard }}_results.json"
+          retention-days: 7
+          if-no-files-found: warn
+
+  merge:
+    name: Merge all shards into unified graph
+    needs: fetch
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Install Rust toolchain (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Prepare data directory
+        run: mkdir -p data results
+
+      - name: Download all shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-shards
+          pattern: "shard-*-results"
+          merge-multiple: true
+
+      - name: List downloaded shards
+        run: |
+          echo "=== Downloaded shard files ==="
+          ls -lh downloaded-shards/ 2>/dev/null || echo "No shard files found"
+          SHARD_COUNT=$(ls downloaded-shards/shard_*_results.json 2>/dev/null | wc -l)
+          echo "Total shard files: ${SHARD_COUNT}"
+
+      - name: Merge shards into unified web_map.db
+        run: |
+          # Copy existing DB if present
+          if [[ -f data/web_map.db ]]; then
+            echo "Starting from existing web_map.db ($(stat -c%s data/web_map.db) bytes)"
+          fi
+
+          # Move shard JSONs into results/
+          if ls downloaded-shards/shard_*_results.json 1>/dev/null 2>&1; then
+            cp downloaded-shards/shard_*_results.json results/
+          else
+            echo "No shard result files found. Nothing to merge."
+            exit 0
+          fi
+
+          # Merge all shard results into the unified database
+          ./target/release/web-mapper \
+            --merge results/ \
+            --db data/web_map.db
+
+      - name: Run clustering
+        run: |
+          if [[ ! -f data/web_map.db ]]; then
+            echo "No web_map.db — skipping clustering"
+            exit 0
+          fi
+
+          ./target/release/web-mapper \
+            --cluster \
+            --db data/web_map.db
+
+      - name: Run GNN training
+        run: |
+          if [[ ! -f data/web_map.db ]]; then
+            echo "No web_map.db — skipping GNN training"
+            exit 0
+          fi
+
+          ./target/release/web-mapper \
+            --train-gnn \
+            --db data/web_map.db
+
+      - name: Run email propagation
+        run: |
+          if [[ ! -f data/web_map.db ]]; then
+            echo "No web_map.db — skipping email propagation"
+            exit 0
+          fi
+
+          ./target/release/web-mapper \
+            --propagate-emails \
+            --db data/web_map.db
+
+      - name: Print summary stats
+        run: |
+          if [[ ! -f data/web_map.db ]]; then
+            echo "No web_map.db produced."
+            exit 0
+          fi
+
+          echo "=== Web-Mapper Merge Summary ==="
+          ./target/release/web-mapper \
+            --stats \
+            --db data/web_map.db
+
+          DB_SIZE=$(stat -c%s data/web_map.db)
+          echo ""
+          echo "Database size: ${DB_SIZE} bytes ($(numfmt --to=iec ${DB_SIZE}))"
+          echo "Shard files merged: $(ls results/shard_*_results.json 2>/dev/null | wc -l)"
+
+      - name: Commit updated database
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add data/web_map.db
+
+          if git diff --cached --quiet; then
+            echo "No changes to web_map.db — skipping commit."
+            exit 0
+          fi
+
+          DB_SIZE=$(stat -c%s data/web_map.db)
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M UTC")
+          SHARD_COUNT=$(ls results/shard_*_results.json 2>/dev/null | wc -l)
+
+          git commit -m "web-mapper: merge ${SHARD_COUNT} shards into web_map.db ($(numfmt --to=iec ${DB_SIZE})) [${TIMESTAMP}]"
+
+          # Retry push up to 5 times
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Push succeeded on attempt ${attempt}"
+              break
+            fi
+            echo "Push failed on attempt ${attempt}, retrying in $((attempt * 2))s..."
+            sleep $((attempt * 2))
+          done
+
+      - name: Upload merged database artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-map-db-merged
+          path: data/web_map.db
+          retention-days: 30
+          if-no-files-found: warn
