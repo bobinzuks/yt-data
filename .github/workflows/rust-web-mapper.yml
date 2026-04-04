@@ -39,19 +39,20 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target
+            web-mapper/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Build release binary
+        working-directory: web-mapper
         run: cargo build --release
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-mapper-binary
-          path: target/release/web-mapper
+          path: web-mapper/target/release/web-mapper
           retention-days: 1
 
   fetch:
@@ -161,12 +162,13 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target
+            web-mapper/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 
       - name: Build release binary
+        working-directory: web-mapper
         run: cargo build --release
 
       - name: Prepare data directory
