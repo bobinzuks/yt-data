@@ -109,7 +109,8 @@ pub fn extract_all(html: &str, source_domain: &str) -> ExtractionResult {
         .and_then(|c| c.get(1))
         .map(|m| {
             let t = m.as_str().trim();
-            if t.len() > 200 { &t[..200] } else { t }
+            let end = t.char_indices().nth(200).map(|(i,_)| i).unwrap_or(t.len());
+            &t[..end]
         })
         .map(|s| s.to_string());
 
