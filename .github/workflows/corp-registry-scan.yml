@@ -1,28 +1,26 @@
-name: Corporations Canada Full Scan
+name: Corporations Canada Scan (Slow + Rotate)
 
 on:
   workflow_dispatch:
     inputs:
-      prefix_start:
-        description: "Start prefix (e.g. A, M)"
-        default: "A"
-      prefix_end:
-        description: "End prefix (e.g. E, Z)"
-        default: "Z"
+      letters:
+        description: "Letters to scan (e.g. ABCDE)"
+        default: "ABCDE"
 
 permissions:
   contents: write
 
 jobs:
   scan:
-    name: "Prefix ${{ matrix.prefix }}"
+    name: "Letter ${{ matrix.letter }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
+
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 1
       matrix:
-        prefix: [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+        letter: ${{ fromJson(format('[{0}]', inputs.letters && join(fromJson(format('["{0}"]', join(split(inputs.letters, ''), '","'))), ',') || '"A","B","C","D","E"')) }}
 
     steps:
       - uses: actions/checkout@v4
@@ -33,76 +31,121 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
-        run: pip install requests beautifulsoup4
+      - run: pip install requests
 
-      - name: Scan prefix ${{ matrix.prefix }}
+      - name: Slow scan letter ${{ matrix.letter }}
         run: |
           python3 << 'PYEOF'
-          import requests, re, csv, time, os, json
+          import requests, re, csv, time, os, json, random
 
           BASE = "https://ised-isde.canada.ca/cc/lgcy/fdrlCrpSrch.html"
-          UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-          PREFIX = "${{ matrix.prefix }}"
-          
+          LETTER = "${{ matrix.letter }}"
+
+          UAS = [
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15",
+              "Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0",
+          ]
+
+          # Use real browser-like session
+          session = requests.Session()
+          session.headers.update({
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Accept-Language": "en-CA,en;q=0.9",
+              "Accept-Encoding": "gzip, deflate, br",
+              "Connection": "keep-alive",
+              "Cache-Control": "no-cache",
+          })
+
+          # First visit the search page to get cookies
+          session.headers["User-Agent"] = random.choice(UAS)
+          try:
+              home = session.get(BASE, timeout=15)
+              print(f"Home page: {home.status_code}, cookies: {len(session.cookies)}")
+              time.sleep(3)
+          except Exception as e:
+              print(f"Home page error: {e}")
+
           os.makedirs("results", exist_ok=True)
           all_corps = []
-          
-          for page in range(200):  # Up to 200 pages = 4000 results per prefix
-              url = f"{BASE}?p={page}&crpNm={PREFIX}&crpNmbr=&bsNmbr=&cProv=&cStatus=Active&cAct="
-              try:
-                  resp = requests.get(url, headers={"User-Agent": UA}, timeout=15)
-                  names = re.findall(r'fdrlCrpDtls\.html[^>]+>([^<]+)', resp.text)
-                  corps = re.findall(r'Corporation number[:\s]+(\S+)', resp.text)
-                  bns = re.findall(r'Business Number[:\s]+(\S+)', resp.text)
-                  
-                  if not names:
-                      break
-                  
-                  for i in range(len(names)):
-                      name = names[i].strip()
-                      all_corps.append({
-                          "name": name,
-                          "corp_number": corps[i] if i < len(corps) else "",
-                          "bn": bns[i] if i < len(bns) else "",
-                          "prefix": PREFIX
-                      })
-                  time.sleep(1)
-              except:
-                  break
 
-          # Save CSV
-          out = f"results/corps_{PREFIX}.csv"
+          # Search with 3-char prefixes: AA, AB, AC... AZ for letter A
+          prefixes = [LETTER + chr(c) for c in range(65, 91)]  # AA-AZ
+          # Also try the letter alone and with common suffixes
+          prefixes = [LETTER, LETTER + " "] + prefixes
+
+          for prefix in prefixes:
+              session.headers["User-Agent"] = random.choice(UAS)
+              
+              for page in range(20):  # Up to 20 pages per prefix
+                  url = f"{BASE}?p={page}&crpNm={prefix}&crpNmbr=&bsNmbr=&cProv=&cStatus=&cAct="
+                  try:
+                      resp = session.get(url, timeout=15)
+                      
+                      names = re.findall(r'fdrlCrpDtls\.html[^>]+>([^<]+)', resp.text)
+                      corps_nums = re.findall(r'Corporation number[:\s]+(\S+)', resp.text)
+                      bns = re.findall(r'Business Number[:\s]+(\S+)', resp.text)
+                      statuses = re.findall(r'Status[:\s]+([^\n<]+)', resp.text)
+
+                      if not names:
+                          break
+
+                      for i in range(len(names)):
+                          name = names[i].strip()
+                          status = statuses[i].strip() if i < len(statuses) else ''
+                          if 'Active' in status or 'Dissolved' not in status:
+                              all_corps.append({
+                                  "name": name,
+                                  "corp_number": corps_nums[i] if i < len(corps_nums) else "",
+                                  "bn": bns[i] if i < len(bns) else "",
+                                  "prefix": prefix.strip()
+                              })
+
+                      # Slow: 3-8 second random delay
+                      delay = random.uniform(3, 8)
+                      time.sleep(delay)
+
+                  except Exception as e:
+                      print(f"  {prefix} p{page}: {e}")
+                      time.sleep(10)  # Extra long wait on error
+                      break
+
+              if all_corps and len(all_corps) % 100 < 20:
+                  print(f"  {prefix}: {len(all_corps)} total so far")
+
+          # Save
+          out = f"results/corps_{LETTER}.csv"
           with open(out, "w", newline="") as f:
               w = csv.DictWriter(f, fieldnames=["name","corp_number","bn","prefix"])
               w.writeheader()
               w.writerows(all_corps)
 
-          # Generate domain candidates
+          # Domain candidates
           domains = set()
           for corp in all_corps:
-              slug = re.sub(r'[^a-z0-9]', '', corp['name'].lower().replace(' ','').replace('inc','').replace('ltd',''))
+              slug = re.sub(r'[^a-z0-9]', '', corp['name'].lower().replace(' ','').replace('inc','').replace('ltd','').replace('ltee',''))
               if 4 <= len(slug) <= 30:
                   domains.add(slug + ".ca")
                   domains.add(slug + ".com")
 
-          with open(f"results/domains_{PREFIX}.txt", "w") as f:
+          with open(f"results/domains_{LETTER}.txt", "w") as f:
               f.write("\n".join(sorted(domains)))
 
-          print(f"Prefix {PREFIX}: {len(all_corps)} corps, {len(domains)} domain candidates")
-          
-          # Summary
-          json.dump({"prefix": PREFIX, "corps": len(all_corps), "domains": len(domains)}, 
-                    open(f"results/summary_{PREFIX}.json", "w"))
+          json.dump({"letter": LETTER, "corps": len(all_corps), "domains": len(domains), "prefixes_tried": len(prefixes)},
+                    open(f"results/summary_{LETTER}.json", "w"))
+
+          print(f"\nLetter {LETTER}: {len(all_corps)} corps, {len(domains)} domains, {len(prefixes)} prefixes tried")
           PYEOF
-        timeout-minutes: 25
+        timeout-minutes: 40
 
       - name: Commit results
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add results/
-          git diff --cached --quiet || git commit -m "registry: prefix ${{ matrix.prefix }} — $(wc -l < results/corps_${{ matrix.prefix }}.csv) corps"
+          git diff --cached --quiet || git commit -m "registry: letter ${{ matrix.letter }}"
           for i in 1 2 3 4 5; do
             git pull --rebase origin main || true
             git push origin HEAD:main && break || sleep $((i * 2))
@@ -112,7 +155,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: "corps-${{ matrix.prefix }}"
+          name: "corps-${{ matrix.letter }}"
           path: results/
           retention-days: 7
           if-no-files-found: ignore
