@@ -1,0 +1,111 @@
+name: Harvest ALL .ca Domains (Common Crawl CDX)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pages_per_shard:
+        description: "CDX index pages per shard"
+        default: "100"
+
+permissions:
+  contents: write
+
+jobs:
+  harvest:
+    name: "CDX pages ${{ matrix.start }}-${{ matrix.end }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        include:
+          - {start: 0, end: 93}
+          - {start: 94, end: 187}
+          - {start: 188, end: 281}
+          - {start: 282, end: 375}
+          - {start: 376, end: 468}
+          - {start: 469, end: 562}
+          - {start: 563, end: 656}
+          - {start: 657, end: 750}
+          - {start: 751, end: 843}
+          - {start: 844, end: 937}
+          - {start: 938, end: 1031}
+          - {start: 1032, end: 1125}
+          - {start: 1126, end: 1218}
+          - {start: 1219, end: 1312}
+          - {start: 1313, end: 1406}
+          - {start: 1407, end: 1500}
+          - {start: 1501, end: 1593}
+          - {start: 1594, end: 1687}
+          - {start: 1688, end: 1781}
+          - {start: 1782, end: 1874}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Harvest .ca domains from CDX pages ${{ matrix.start }}-${{ matrix.end }}
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request, json, time, os
+
+          CDX = "https://index.commoncrawl.org/CC-MAIN-2026-12-index"
+          START = ${{ matrix.start }}
+          END = ${{ matrix.end }}
+          
+          os.makedirs("results", exist_ok=True)
+          domains = set()
+          errors = 0
+          
+          for page in range(START, END + 1):
+              url = f"{CDX}?url=*.ca&output=json&page={page}"
+              for attempt in range(3):
+                  try:
+                      req = urllib.request.Request(url, headers={"User-Agent": "WebMapper/1.0"})
+                      resp = urllib.request.urlopen(req, timeout=30)
+                      for line in resp:
+                          try:
+                              rec = json.loads(line.decode())
+                              u = rec.get("url", "")
+                              if "://" in u:
+                                  host = u.split("://")[1].split("/")[0].split(":")[0].lower()
+                                  host = host.removeprefix("www.")
+                                  if host.endswith(".ca") and "." in host:
+                                      domains.add(host)
+                          except: pass
+                      break
+                  except Exception as e:
+                      errors += 1
+                      time.sleep(5 * (attempt + 1))
+              
+              if (page - START) % 10 == 0:
+                  print(f"  Page {page}/{END}: {len(domains):,} unique domains, {errors} errors", flush=True)
+              time.sleep(0.5)
+
+          out = f"results/ca_domains_{START}_{END}.txt"
+          with open(out, "w") as f:
+              f.write("\n".join(sorted(domains)))
+          
+          print(f"\nDone: {len(domains):,} unique .ca domains from pages {START}-{END}")
+          PYEOF
+        timeout-minutes: 55
+
+      - name: Upload domains
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "ca-domains-${{ matrix.start }}-${{ matrix.end }}"
+          path: "results/ca_domains_${{ matrix.start }}_${{ matrix.end }}.txt"
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/
+          git diff --cached --quiet || git commit -m "harvest: .ca domains pages ${{ matrix.start }}-${{ matrix.end }}"
+          for i in 1 2 3 4 5; do git pull --rebase origin main || true; git push origin HEAD:main && break || sleep $((i*2)); done
