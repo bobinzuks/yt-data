@@ -78,14 +78,25 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 1
 
-      - name: Download web-mapper binary
-        uses: actions/download-artifact@v4
-        with:
-          name: web-mapper-binary
-          path: .
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Make binary executable
-        run: chmod +x ./web-mapper
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            web-mapper/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('web-mapper/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Build binary
+        working-directory: web-mapper
+        run: cargo build --release
+
+      - name: Setup binary
+        run: cp web-mapper/target/release/web-mapper ./web-mapper-bin && chmod +x ./web-mapper-bin
 
       - name: Prepare data directory
         run: |
@@ -104,7 +115,7 @@ jobs:
           echo "Domains per runner: ${{ inputs.domains_per_runner || '5000' }}"
           echo "Cycles: ${{ inputs.cycles || '1' }}"
 
-          ./web-mapper \
+          ./web-mapper-bin \
             --fetch ${{ inputs.domains_per_runner || '5000' }} \
             --shard ${{ matrix.shard }} \
             --total-shards 20 \
@@ -116,7 +127,7 @@ jobs:
         run: |
           SHARD_FILE="results/shard_${{ matrix.shard }}_results.json"
 
-          ./web-mapper \
+          ./web-mapper-bin \
             --export-shard "${SHARD_FILE}" \
             --shard ${{ matrix.shard }} \
             --total-shards 20 \
