@@ -1,0 +1,118 @@
+name: Corporations Canada Full Scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      prefix_start:
+        description: "Start prefix (e.g. A, M)"
+        default: "A"
+      prefix_end:
+        description: "End prefix (e.g. E, Z)"
+        default: "Z"
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    name: "Prefix ${{ matrix.prefix }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        prefix: [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install requests beautifulsoup4
+
+      - name: Scan prefix ${{ matrix.prefix }}
+        run: |
+          python3 << 'PYEOF'
+          import requests, re, csv, time, os, json
+
+          BASE = "https://ised-isde.canada.ca/cc/lgcy/fdrlCrpSrch.html"
+          UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          PREFIX = "${{ matrix.prefix }}"
+          
+          os.makedirs("results", exist_ok=True)
+          all_corps = []
+          
+          for page in range(200):  # Up to 200 pages = 4000 results per prefix
+              url = f"{BASE}?p={page}&crpNm={PREFIX}&crpNmbr=&bsNmbr=&cProv=&cStatus=Active&cAct="
+              try:
+                  resp = requests.get(url, headers={"User-Agent": UA}, timeout=15)
+                  names = re.findall(r'fdrlCrpDtls\.html[^>]+>([^<]+)', resp.text)
+                  corps = re.findall(r'Corporation number[:\s]+(\S+)', resp.text)
+                  bns = re.findall(r'Business Number[:\s]+(\S+)', resp.text)
+                  
+                  if not names:
+                      break
+                  
+                  for i in range(len(names)):
+                      name = names[i].strip()
+                      all_corps.append({
+                          "name": name,
+                          "corp_number": corps[i] if i < len(corps) else "",
+                          "bn": bns[i] if i < len(bns) else "",
+                          "prefix": PREFIX
+                      })
+                  time.sleep(1)
+              except:
+                  break
+
+          # Save CSV
+          out = f"results/corps_{PREFIX}.csv"
+          with open(out, "w", newline="") as f:
+              w = csv.DictWriter(f, fieldnames=["name","corp_number","bn","prefix"])
+              w.writeheader()
+              w.writerows(all_corps)
+
+          # Generate domain candidates
+          domains = set()
+          for corp in all_corps:
+              slug = re.sub(r'[^a-z0-9]', '', corp['name'].lower().replace(' ','').replace('inc','').replace('ltd',''))
+              if 4 <= len(slug) <= 30:
+                  domains.add(slug + ".ca")
+                  domains.add(slug + ".com")
+
+          with open(f"results/domains_{PREFIX}.txt", "w") as f:
+              f.write("\n".join(sorted(domains)))
+
+          print(f"Prefix {PREFIX}: {len(all_corps)} corps, {len(domains)} domain candidates")
+          
+          # Summary
+          json.dump({"prefix": PREFIX, "corps": len(all_corps), "domains": len(domains)}, 
+                    open(f"results/summary_{PREFIX}.json", "w"))
+          PYEOF
+        timeout-minutes: 25
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/
+          git diff --cached --quiet || git commit -m "registry: prefix ${{ matrix.prefix }} — $(wc -l < results/corps_${{ matrix.prefix }}.csv) corps"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main || true
+            git push origin HEAD:main && break || sleep $((i * 2))
+          done
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "corps-${{ matrix.prefix }}"
+          path: results/
+          retention-days: 7
+          if-no-files-found: ignore
