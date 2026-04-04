@@ -97,9 +97,20 @@ pub fn flush_batch(conn: &mut Connection, results: &[FetchResult]) -> Result<usi
 
         tx.execute(
             "UPDATE domains SET fetched=1, fetch_time=?1, title=?2, emails=?3,
-             phones=?4, is_business=?5 WHERE domain=?6",
-            params![r.fetch_time, r.title, emails_json, phones_json, is_biz, r.domain],
+             phones=?4, is_business=?5, server=?6, redirect_domain=?7 WHERE domain=?8",
+            params![r.fetch_time, r.title, emails_json, phones_json, is_biz,
+                    r.server, r.redirect_domain, r.domain],
         )?;
+
+        // If redirect detected, add redirect target as new domain + cluster edge
+        if let Some(ref redir) = r.redirect_domain {
+            tx.execute("INSERT OR IGNORE INTO domains(domain) VALUES(?1)", params![redir])?;
+            // Create a synthetic tracking ID for redirect clustering
+            let redir_tid = format!("REDIR:{}", redir);
+            tx.execute("INSERT OR IGNORE INTO tracking_ids(id, type) VALUES(?1, 'redirect')", params![redir_tid])?;
+            tx.execute("INSERT OR IGNORE INTO domain_ids(domain, tracking_id) VALUES(?1, ?2)", params![r.domain, redir_tid])?;
+            tx.execute("INSERT OR IGNORE INTO domain_ids(domain, tracking_id) VALUES(?1, ?2)", params![redir, redir_tid])?;
+        }
 
         for (tid, ttype) in &r.tracking_ids {
             let exists: bool = tx

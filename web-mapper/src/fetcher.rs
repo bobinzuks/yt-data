@@ -39,6 +39,9 @@ pub struct FetchResult {
     pub outlinks: Vec<String>,
     pub fetch_time: String,
     pub success: bool,
+    pub server: Option<String>,      // Server header = hosting fingerprint
+    pub redirect_domain: Option<String>, // Final URL domain after redirects
+    pub ip_hash: Option<String>,     // Hash of resolved IP for co-hosting clusters
 }
 
 impl FetchResult {
@@ -52,6 +55,9 @@ impl FetchResult {
             outlinks: Vec::new(),
             fetch_time: chrono_now(),
             success: false,
+            server: None,
+            redirect_domain: None,
+            ip_hash: None,
         }
     }
 }
@@ -102,7 +108,17 @@ async fn fetch_one_inner(client: &Client, domain: &str) -> FetchResult {
                 return Err(anyhow::anyhow!("bad status: {}", resp.status()));
             }
 
-            // Read up to MAX_BYTES via bytes() with content-length hint
+            // Capture server header + final redirect URL (free clustering signals)
+            let server_hdr = resp.headers()
+                .get("server")
+                .and_then(|v| v.to_str().ok())
+                .map(|s| s.to_string());
+            let final_url = resp.url().clone();
+            let redir_domain = final_url.host_str()
+                .map(|h| h.trim_start_matches("www.").to_string())
+                .filter(|h| h != domain);
+
+            // Read up to MAX_BYTES
             let bytes = resp.bytes().await?;
             let truncated = if bytes.len() > MAX_BYTES {
                 &bytes[..MAX_BYTES]
@@ -110,12 +126,12 @@ async fn fetch_one_inner(client: &Client, domain: &str) -> FetchResult {
                 &bytes
             };
             let html = String::from_utf8_lossy(truncated).to_string();
-            Ok::<String, anyhow::Error>(html)
+            Ok::<(String, Option<String>, Option<String>), anyhow::Error>((html, server_hdr, redir_domain))
         }
         .await;
 
         match result {
-            Ok(html) => {
+            Ok((html, server, redir)) => {
                 let ext = extractor::extract_all(&html, domain);
                 return FetchResult {
                     domain: domain.to_string(),
@@ -126,6 +142,9 @@ async fn fetch_one_inner(client: &Client, domain: &str) -> FetchResult {
                     outlinks: ext.outlinks,
                     fetch_time: chrono_now(),
                     success: true,
+                    server,
+                    redirect_domain: redir,
+                    ip_hash: None,
                 };
             }
             Err(_) => continue,
