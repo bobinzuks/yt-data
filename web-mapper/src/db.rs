@@ -163,7 +163,8 @@ fn update_domain_counts_tx(tx: &Transaction) -> Result<()> {
 }
 
 /// Get unfetched domains ordered by GNN score (desc), then tracking-ID fanout.
-pub fn get_unfetched(conn: &Connection, limit: usize) -> Result<Vec<String>> {
+/// If shard/total_shards set, only returns domains where hash(domain) % total == shard.
+pub fn get_unfetched(conn: &Connection, limit: usize, shard: Option<usize>, total_shards: usize) -> Result<Vec<String>> {
     let mut stmt = conn.prepare(
         "SELECT d.domain FROM domains d
          LEFT JOIN domain_ids di ON d.domain = di.domain
@@ -173,9 +174,23 @@ pub fn get_unfetched(conn: &Connection, limit: usize) -> Result<Vec<String>> {
          LIMIT ?1",
     )?;
     let rows = stmt
-        .query_map(params![limit as i64], |row| row.get::<_, String>(0))?
+        .query_map(params![limit as i64 * total_shards as i64], |row| row.get::<_, String>(0))?
         .collect::<std::result::Result<Vec<_>, _>>()?;
-    Ok(rows)
+
+    // Filter by shard if specified
+    match shard {
+        Some(s) => {
+            let filtered: Vec<String> = rows.into_iter()
+                .filter(|d| {
+                    let hash = d.bytes().fold(0u64, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u64));
+                    (hash % total_shards as u64) == s as u64
+                })
+                .take(limit)
+                .collect();
+            Ok(filtered)
+        }
+        None => Ok(rows.into_iter().take(limit).collect()),
+    }
 }
 
 /// Seed from CC WAT JSON (full_cluster_graph.json).

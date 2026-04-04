@@ -61,11 +61,33 @@ struct Cli {
     /// Path to the email-velocity data directory (for seed sources)
     #[arg(long)]
     data_dir: Option<String>,
+
+    /// Shard index for parallel Actions runs (0-based)
+    #[arg(long)]
+    shard: Option<usize>,
+
+    /// Total number of shards
+    #[arg(long, default_value_t = 1)]
+    total_shards: usize,
+
+    /// Export shard results to JSON file
+    #[arg(long)]
+    export_shard: Option<String>,
+
+    /// Merge shard result files into DB
+    #[arg(long)]
+    merge: Option<String>,
+
+    /// Propagate emails across clusters
+    #[arg(long)]
+    propagate_emails: bool,
 }
 
 impl Cli {
     fn has_any_command(&self) -> bool {
         self.seed
+            || self.merge.is_some()
+            || self.propagate_emails
             || self.fetch.is_some()
             || self.expand
             || self.cluster
@@ -126,7 +148,7 @@ async fn main() -> Result<()> {
         do_seed(&mut conn, &paths)?;
     }
     if let Some(limit) = cli.fetch {
-        do_fetch(&mut conn, limit).await?;
+        do_fetch(&mut conn, limit, cli.shard, cli.total_shards).await?;
     }
     if cli.expand {
         db::expand(&mut conn, &paths.cc_wat)?;
@@ -138,7 +160,7 @@ async fn main() -> Result<()> {
         do_gnn(&mut conn, &paths)?;
     }
     if let Some(fetch_limit) = cli.run {
-        run_cycle(&mut conn, &paths, fetch_limit, cli.cycles).await?;
+        run_cycle(&mut conn, &paths, fetch_limit, cli.cycles, cli.shard, cli.total_shards).await?;
     }
     if cli.stats {
         db::stats(&conn)?;
@@ -162,8 +184,8 @@ fn do_seed(conn: &mut rusqlite::Connection, paths: &Paths) -> Result<()> {
     Ok(())
 }
 
-async fn do_fetch(conn: &mut rusqlite::Connection, limit: usize) -> Result<usize> {
-    let domains = db::get_unfetched(conn, limit)?;
+async fn do_fetch(conn: &mut rusqlite::Connection, limit: usize, shard: Option<usize>, total_shards: usize) -> Result<usize> {
+    let domains = db::get_unfetched(conn, limit, shard, total_shards)?;
     if domains.is_empty() {
         println!("  No unfetched domains.");
         return Ok(0);
@@ -210,6 +232,8 @@ async fn run_cycle(
     paths: &Paths,
     fetch_limit: usize,
     cycles: usize,
+    shard: Option<usize>,
+    total_shards: usize,
 ) -> Result<()> {
     // Auto-seed if empty
     let total_ids: i64 =
@@ -229,7 +253,7 @@ async fn run_cycle(
         )?;
 
         println!("[FETCH]");
-        let new_ids = do_fetch(conn, fetch_limit).await?;
+        let new_ids = do_fetch(conn, fetch_limit, shard, total_shards).await?;
 
         println!("[EXPAND]");
         let new_doms = db::expand(conn, &paths.cc_wat)?;
